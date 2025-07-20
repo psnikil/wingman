@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
 import "./globals.css";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,6 +29,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <header>
+          <span className="text-xl font-bold text-blue-400 tracking-wide select-none">
+          <Link href="/">
+            <img src="/logo.svg" alt="" className="h-20 w-auto cursor-pointer p-2" />
+            WINGMAN
+          </Link>
+          </span>
+        </header>
+
         {children}
       </body>
     </html>
