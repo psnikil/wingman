@@ -1,7 +1,18 @@
 /* 
-This is the chat page for a specific chatid.
+This is the server-side chat page for a specific chatid.
 
 */
+
+
+import { useChatStore } from '@/store/chatStore';
+import SideBar from '@/components/SideBar';
+import ChatPageClient from './ChatPageClient';
+
+interface Chat {
+  chatId: string;
+  chatName: string;
+  chatSummary: string;
+}
 
 interface ChatPageProps {
     params: {
@@ -10,14 +21,13 @@ interface ChatPageProps {
 }
 
 
-export default function ChatPage({ params }: ChatPageProps) {
-  const { chatID } = params;
+
+export default async function ChatPage({ params }: ChatPageProps) {
+
+  
+  const { chatID } = await params;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background text-foreground">
-      <h1 className="text-2xl font-bold">Chat Page</h1>
-      <p className="mt-4 text-lg">You are viewing chat with ID: {chatID}</p>
-      {/* Additional chat functionalities can be added here */}
-    </div>
+    <ChatPageClient chatID={chatID}/>
   );
 }
