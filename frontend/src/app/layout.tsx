@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
+import { headers } from "next/headers";
 
 
 const geistSans = Geist({
@@ -27,15 +28,24 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
       >
-        <header>
-          <span className="text-xl font-bold text-blue-400 tracking-wide select-none">
-          <Link href="/">
-            <img src="/logo.svg" alt="" className="h-20 w-auto cursor-pointer p-2" />
-            WINGMAN
-          </Link>
-          </span>
+        {/*This is the head section of the page */}
+        <header className="flex items-center justify-between px-6 py-4 border-b-gray-800">
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-bold text-blue-400 tracking-wide select-none">
+              <Link href="/">
+                <img src="/logo.svg" alt="" className="h-20 w-auto cursor-pointer p-2" />
+                WINGMAN
+              </Link>
+            </span>
+          </div>
+          <div className="flex items-center">
+            <span className="w-9 h-9 flex items-center justify-center rounded-full bg-blue-500 text-white font-bold text-lg">
+              U
+            </span>
+          </div>
+
         </header>
 
         {children}
