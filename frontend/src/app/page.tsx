@@ -4,6 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useBackendStore } from "@/store/backendStore";
+import LoadingIcon from "@/components/LoadingIcon";
+import ButtonLink from "@/components/ButtonLink";
 
 // export default function Home() {
 //   return (
@@ -111,74 +114,18 @@ import { useRouter } from "next/navigation";
 /* 
 This is the landing page. This page should check if all the process are initialized and only then all the used to start the app
 */
-type MyButtonProps = {
-  button_text: string;
-  link: string;
-};
-
-
-
-
-//function for a button to redirect to user-defined link
-function MyButtonLink({ button_text, link }: MyButtonProps) {
-  const router = useRouter();
-  return (
-    <button
-      onClick={() => router.push(link)}
-      className="
-        bg-blue-200 text-blue-400 font-semibold
-        px-6 py-2 rounded-full
-        transition-colors duration-300
-        border-6 border-transparent
-        hover:border-blue-900
-      "
-    >
-      {button_text}
-    </button>
-  );
-}
-
-
-//function to define the loading icon
-function LoadingIcon() {
-  //returning the svg of spinner
-  return (
-    <div className="flex items-center justify-center">
-      <svg
-        className="animate-spin h-8 w-8 text-blue-600"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <circle
-          className="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          strokeWidth="4"
-        />
-        <path
-          className="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8v8z"
-        />
-      </svg>
-    </div>
-
-  )
-
-}
-
 
 //function to check background processes are initiated
 export function CheckInitProcesses(){
   //placeholder for now. need backend to check for the logic
   //create a timer to check if the loading icon and button activate right
-  const [processInit, setprocessInit] = useState(false);
+  const {backendInit, setBackendInit} = useBackendStore();
   useEffect(() => {
+    if (!backendInit) {
+
+    } // If already initialized, skip setting up the timeout
     const timeout = setTimeout(() => {
-      setprocessInit(true); // Set processesInit to true after 2 seconds
+      setBackendInit(true); // Set processesInit to true after 2 seconds
     }, 2000); // 2 seconds
 
     return () => clearTimeout(timeout);
@@ -186,10 +133,10 @@ export function CheckInitProcesses(){
 
   return (
     <div className="flex items-center justify-center">
-      {!processInit ? (
+      {!backendInit ? (
         <LoadingIcon />
       ) : (
-        <MyButtonLink button_text="Start Chat" link="/homepage" />
+        <ButtonLink button_text="Start Chat" link="/homepage" />
       )}
     </div>
   )
