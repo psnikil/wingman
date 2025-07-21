@@ -1,0 +1,4 @@
+# below are temp files to ignore
+
+frontend/src/components/MessageBubble.tsx
+frontend/src/components/ChatContents.tsx

@@ -63,7 +63,7 @@ export default function Homepage() {
       <main className="flex-1 flex items-center justify-center bg-neutral-900 p-6 ">
         <div className="text-shadow-gray-400 text-2xl font-light">
           Welcome to Wingman! Select a chat or start a new conversation.
-          <PromptInput onSubmit={handlePrompt} />
+          <PromptInput onSubmit={handlePrompt} disabled={false} placeholder = "Start the conversation..."/>
         </div>
       </main>
     </div>
