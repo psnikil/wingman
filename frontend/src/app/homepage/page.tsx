@@ -11,12 +11,22 @@ import crypto from 'crypto';
 import { useChatStore } from '@/store/chatStore';
 import React, { useState } from "react";
 
-interface Chat {
+export interface Message {
+  id: string;
+  content: string;
+  role: 'user' | 'assistant';
+  timestamp: Date;
+  isLoading?: boolean;
+}
+
+export interface Chat {
   chatId: string;
   chatName: string;
   chatSummary: string;
+  messages?: Message[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }
-
 
 
 
@@ -26,23 +36,67 @@ function NumberGenerator(){
   return '/chatpage/'+ randomByteString;
 }
 
+//Create new chat from prompt
+function createNewChat(prompt: string) {
+
+    const addChat = useChatStore((state) => state.addChat);
+    const addMessage = useChatStore((state) => state.addMessage);
+
+    console.log("User prompt:", prompt);
+    
+    let newMessage:Message = {
+      id: crypto.randomBytes(16).toString('hex'),
+      content: prompt,
+      role: 'user',
+      timestamp: new Date(),
+      isLoading: false
+    };
+    //Temporary logic to create a new chat
+    let newChat:Chat = {
+      chatId: crypto.randomBytes(16).toString('hex'),
+      chatName: `New Chat: ${prompt.substring(0, 6)}`,
+      chatSummary: prompt.substring(0, 20),
+      messages: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    addChat(newChat) // Add new chat to the list
+    addMessage(newChat.chatId,newMessage);
+
+
+
+}
+
 
 export default function Homepage() {
 
    const chats = useChatStore((state) => state.chats);
    const addChat = useChatStore((state) => state.addChat);
+   const addMessage = useChatStore((state) => state.addMessage);
 
   //below function should re-route to chatpage and/or send prompt to backend
   const handlePrompt = (prompt: string) => {
     // Your logic to handle/submit the prompt, e.g., send to backend/chat API
     console.log("User prompt:", prompt);
+    
+    let newMessage:Message = {
+      id: crypto.randomBytes(16).toString('hex'),
+      content: prompt,
+      role: 'user',
+      timestamp: new Date(),
+      isLoading: false
+    };
     //Temporary logic to create a new chat
     let newChat:Chat = {
       chatId: crypto.randomBytes(16).toString('hex'),
-      chatName: `New Chat: ${prompt.substring(0, 20)}`,
-      chatSummary: prompt
+      chatName: `New Chat: ${prompt.substring(0, 6)}`,
+      chatSummary: prompt.substring(0, 20),
+      messages: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     addChat(newChat) // Add new chat to the list
+    addMessage(newChat.chatId,newMessage);
 
     console.log('the chats are ',chats);
 

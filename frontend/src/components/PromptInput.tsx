@@ -51,7 +51,7 @@ export default function PromptInput({
   };
 
   return (
-    <div className="flex items-end space-x-3 p-4 border-gray-200">
+    <div className="flex flex-1 items-end space-x-3 p-4 border-gray-200">
       <form onSubmit={handleFormSubmit} className="flex-1 relative">
         <textarea
           ref={textareaRef}
@@ -64,13 +64,13 @@ export default function PromptInput({
           className="w-full resize-none rounded-xl border bg-slate-800 border-blue-400 px-4 py-3 pr-12 
                      focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 
                      disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-400
-                     max-h-[150px] min-h-[48px] overflow-y-auto"
+                     max-h-[150px] min-h-[48px] overflow-y-hidden"
         />
         
         <button
           type="submit"
           disabled={disabled || !prompt.trim()}
-          className="absolute right-2 bottom-2 p-2 rounded-lg bg-blue-500 text-white 
+          className="absolute right-8 bottom-5 p-2 rounded-lg bg-blue-500 text-white 
                      hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed 
                      transition-colors duration-200 flex items-center justify-center"
         >
