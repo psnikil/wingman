@@ -8,10 +8,22 @@ import { useChatStore } from '@/store/chatStore';
 import SideBar from '@/components/SideBar';
 import ChatPageClient from './ChatPageClient';
 
-interface Chat {
+export interface Message {
+  id: string;
+  content: string;
+  role: 'user' | 'assistant';
+  timestamp: Date;
+  isLoading?: boolean;
+}
+
+
+export interface Chat {
   chatId: string;
   chatName: string;
   chatSummary: string;
+  messages: Message[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface ChatPageProps {
