@@ -112,10 +112,13 @@ export default function ChatContent({ chatID }: ChatContentProps) {
         
         {isTyping && <TypingIndicator />}
         <div ref={messagesEndRef} />
-      
-       
       </div>
-       <PromptInput onSubmit={handlePrompt} disabled={false} placeholder = "Type message..."/>
+      <div className='flex flex-row'>
+        <PromptInput onSubmit={handlePrompt} disabled={false} placeholder = "Type message..."/>
+
+      </div>
+
+
     </div>
   );
 }

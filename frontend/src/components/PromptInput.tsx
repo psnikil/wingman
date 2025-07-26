@@ -14,15 +14,33 @@ export default function PromptInput({ onSubmit, disabled = false, placeholder = 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [textareaHeight, setTextareaHeight] = useState(48); // px, min height
 
+  // Constants for min/max height (px)
+  const MIN_HEIGHT = 48; // 2 lines
+  const MAX_HEIGHT = 200; // ~7-8 lines, adjust as needed
+
+  // Adjust textarea height on input
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPrompt(e.target.value);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      const scrollHeight = textareaRef.current.scrollHeight;
+      const newHeight = Math.max(MIN_HEIGHT, Math.min(scrollHeight, MAX_HEIGHT));
+      textareaRef.current.style.height = `${newHeight}px`;
+      setTextareaHeight(newHeight);
+    }
+  };
+
+  // Reset textarea height on clear
   const handleSubmit = () => {
     if (prompt.trim() && !disabled) {
       onSubmit(prompt.trim());
       setPrompt("");
-      // Reset textarea height
       if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
+        textareaRef.current.style.height = `${MIN_HEIGHT}px`;
       }
+      setTextareaHeight(MIN_HEIGHT);
     }
   };
 
@@ -30,16 +48,6 @@ export default function PromptInput({ onSubmit, disabled = false, placeholder = 
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setPrompt(e.target.value);
-    // Auto-resize textarea for growing with content, min 3 lines (72px)
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      const scrollHeight = textareaRef.current.scrollHeight;
-      textareaRef.current.style.height = `${Math.max(72, Math.min(scrollHeight, 150))}px`;
     }
   };
 
@@ -64,14 +72,19 @@ export default function PromptInput({ onSubmit, disabled = false, placeholder = 
     }
   };
 
+  // The main container grows with textarea, actions always pinned to bottom
   return (
-    <div className="flex flex-col flex-3 relative resize-none rounded-xl border bg-slate-800 border-blue-400 px-4 py-3 pr-4 
-                     focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 
-                     disabled:bg-gray-100 disabled:cursor-not-allowed 
-                     max-h-[350px] min-h-[48px] overflow-y-hidden">
-      <form onSubmit={handleFormSubmit} className="flex flex-col h-full ">
+    <div
+      className="flex flex-col flex-3 relative rounded-xl border bg-slate-800 border-blue-400 px-4 pt-3 pb-2 pr-4 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:cursor-not-allowed min-h-[48px] max-h-[350px]"
+      style={{
+        minHeight: `${MIN_HEIGHT + 48}px`, // 48px for actions row
+        maxHeight: `${MAX_HEIGHT + 60}px`, // allow for actions row
+        height: 'auto',
+      }}
+    >
+      <form onSubmit={handleFormSubmit} className="flex flex-col h-full">
         {/* Textarea section */}
-        <div className="flex-1 flex flex-col border-b border-gray-600 " id="prompt-input-textarea">
+        <div className="flex-1 flex flex-col border-b border-gray-600" id="prompt-input-textarea">
           <textarea
             ref={textareaRef}
             value={prompt}
@@ -80,11 +93,26 @@ export default function PromptInput({ onSubmit, disabled = false, placeholder = 
             placeholder={placeholder}
             disabled={disabled}
             rows={2}
-            className="w-full resize-none flex-1 focus:outline-none scroll-smooth dark-scrollbar text-white-100 bg-transparent"
+            style={{
+              minHeight: `${MIN_HEIGHT}px`,
+              maxHeight: `${MAX_HEIGHT}px`,
+              height: `${textareaHeight}px`,
+              overflowY: textareaHeight >= MAX_HEIGHT ? 'auto' : 'hidden',
+              resize: 'none',
+            }}
+            className="w-full flex-1 focus:outline-none scroll-smooth dark-scrollbar text-white-100 bg-transparent resize-none"
           />
         </div>
         {/* Actions section pinned to bottom */}
-        <div className="flex flex-row items-center justify-between pt-2 relative bg-slate-800 z-10" id="prompt-input-actions">
+        <div
+          className="flex flex-row items-center justify-between pt-2 relative bg-slate-800 z-10"
+          id="prompt-input-actions"
+          style={{
+            position: 'sticky',
+            bottom: 0,
+            background: 'inherit',
+          }}
+        >
           {/* Plus icon and file input */}
           <div className="flex items-end">
             <button
@@ -119,9 +147,7 @@ export default function PromptInput({ onSubmit, disabled = false, placeholder = 
           <button
             type="submit"
             disabled={disabled || !prompt.trim()}
-            className="p-2 rounded-lg bg-blue-500 text-white 
-                       hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed 
-                       transition-colors duration-200 flex items-center justify-center"
+            className="p-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center"
           >
             <PaperAirplaneIcon className="w-4 h-4" />
           </button>
