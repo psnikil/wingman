@@ -1,0 +1,128 @@
+import subprocess
+import time
+import sys
+import os
+import socket
+
+from langchain_ollama import OllamaLLM as Ollama
+from langchain_core.prompts import ChatPromptTemplate
+import ollama
+
+# OLLAMA_URL = "http://localhost:11434"
+
+
+def is_ollama_running(host="localhost", port=11434):
+    """Check if the Ollama server is listening on the default port."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.settimeout(1)
+        return sock.connect_ex((host, port)) == 0
+    
+def start_ollama():
+    """Start Ollama in the background."""
+    print("Starting Ollama server...")
+    try:
+        if os.name == 'nt':  # Windows
+            subprocess.Popen("start ollama serve", shell=True)
+        else:  # macOS/Linux
+            subprocess.Popen(["ollama", "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception as e:
+        print(f"Error starting Ollama: {e}")
+        sys.exit(1)
+
+def list_ollama_models():
+    """List available models in Ollama."""
+    models_names = []
+    try:
+        models = ollama.list()['models']
+        # print(f'current model val is',models)
+        # print(f"Found {len(models)} models.")
+        if not models:
+            print("⚠️ No models found. Please run: `ollama pull llama3` or similar.")
+            return []
+        print("📦 Available models:",models[0]['model'])
+        
+        for model in models:
+            print(f"{model['model']}")
+            models_names.append(model['model'])
+        return models_names
+    except Exception as e:
+        print(f"Error listing models: {e}")
+        return []
+
+def wait_for_ollama(timeout=15):
+    """Wait until Ollama is ready."""
+    print("Waiting for Ollama to be ready...")
+    for _ in range(timeout):
+        if is_ollama_running():
+            print("✅ Ollama is running.")
+            models = list_ollama_models()
+            print("Available models:", models)
+            return True
+        time.sleep(1)
+    print("❌ Ollama did not start in time.")
+    return False
+
+def chat_with_model(model_name, sys_prompt=" You are a helpful assistant. Answer the user's question based on the provided context."):
+    """Send a prompt to the selected model."""
+    template = '''
+    System prompt: {sys_prompt}
+    Context: {context}  
+    User's question: {question}
+    Answer:
+    '''
+    context = ''
+    try:
+        chat_model = Ollama(model=model_name)
+        prompt_template = ChatPromptTemplate.from_template(template)
+        chain = prompt_template | chat_model
+        print(f"\n💬 Starting chat with model `{model_name}`, type exit to quit")
+        while True:
+            user_input = input("You: ")
+            if user_input.lower() == 'exit':
+                print("Exiting chat.")
+                break
+
+
+            print('sending user prompt')
+            response = chain.invoke({
+                "sys_prompt": sys_prompt,
+                "context": context,
+                "question": user_input
+                })
+            print(f"Model: {response}")
+            context += f"\nUser: {user_input}\nModel: {response}"
+
+
+        
+    except Exception as e:
+        return f"❌ Error during chat: {e}"
+
+def main():
+    models = list_ollama_models()
+    print("Available models:", models)
+
+    # setting up the langhain_ollama model
+    # chat_model = models[0]
+
+    # chat_instance = Ollama(model=chat_model)
+
+    # user_prompt = input("Enter your prompt: ")
+    # response = chat_instance.invoke(input=user_prompt)
+    # print("Response from model:", response)
+
+    chat_with_model(models[0])
+
+
+    # # Example: Generate text using a specific model
+    # response = client.generate(model="llama2", prompt="Hello, how are you?")
+    # print("Response:", response.text)
+
+if __name__ == "__main__":
+    if not is_ollama_running():
+        start_ollama()
+        if not wait_for_ollama():
+            sys.exit(1)
+    else:
+        main()
+
+    

@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pdb
+*.egg-info/
+*.egg
+*.log
+*.sqlite3
+*.db
+*.env
+.env
+.venv/
+venv/
+ENV/
+backend/
+backend/Lib/
+backend/Scripts/
+backend/Include/
+backend/pyvenv.cfg
+
+# VSCode
+.vscode/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Migrations
+migrations/__pycache__/
+
+# Test & Coverage
+htmlcov/
+.coverage
+.tox/
+.cache/
+pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Others
+*.bak
+*.swp
+*.tmp
+
+# Ignore local ollama models (if any)
+ollama_models/
