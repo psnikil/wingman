@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { useBackendStore } from "@/store/backendStore";
 import LoadingIcon from "@/components/LoadingIcon";
 import ButtonLink from "@/components/ButtonLink";
+import IsInitialised from "./serverPage";
+
 
 // export default function Home() {
 //   return (
@@ -120,15 +122,40 @@ export function CheckInitProcesses(){
   //placeholder for now. need backend to check for the logic
   //create a timer to check if the loading icon and button activate right
   const {backendInit, setBackendInit} = useBackendStore();
+  
+
+  
   useEffect(() => {
-    if (!backendInit) {
+     let isInit:boolean= false;
+     const checkBackend = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/is_init`); // Local API route
+        if (!res.ok) throw new Error('Failed to fetch');
+        const result = await res.json();
+        if (result.is_init === true) {
+          console.log("Backend processes initialized successfully.");
+          setBackendInit(result.is_init);
+          return; // stop checking if true
+        }
 
-    } // If already initialized, skip setting up the timeout
-    const timeout = setTimeout(() => {
-      setBackendInit(true); // Set processesInit to true after 2 seconds
-    }, 2000); // 2 seconds
+        if (!isInit){
+          setTimeout(checkBackend, 1500); // Check again after 1.5 seconds
+        }
+        
+      } catch (err: any) {
+        console.error('Error initializing ollama:', err.message);
+        if (!isInit){
+          setTimeout(checkBackend, 2500); // lonnger delay if error
+        }
+      }
+    };
+      // console.log("Backend processes not initialized yet, waiting...");
 
-    return () => clearTimeout(timeout);
+    checkBackend();
+      
+    return () => {
+      isInit = true; // Cleanup function to stop checking when component unmounts
+    };
   }, []);
 
   return (
