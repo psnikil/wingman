@@ -1,20 +1,50 @@
 // components/PromptInput.tsx
 "use client"
 import { useState, useRef, KeyboardEvent } from "react";
+import { useChatStore } from '@/store/chatStore';
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
+import { get } from "http";
+import crypto from 'crypto';
+
+
+export interface Message {
+  id: string;
+  content: string;
+  role: 'user' | 'assistant';
+  timestamp: Date;
+  isLoading?: boolean;
+}
+
+
+export interface Chat {
+  chatId: string;
+  chatName: string;
+  chatSummary: string;
+  message: Message[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 
 interface PromptInputProps {
   onSubmit: (prompt: string) => void;
   disabled?: boolean;
   placeholder?: string;
+  chatID:string;
 }
 
-export default function PromptInput({ onSubmit, disabled = false, placeholder = "Type your message..." }: PromptInputProps) {
+export default function PromptInput({ onSubmit, disabled = false, placeholder = "Type your message...",chatID }: PromptInputProps) {
   const [prompt, setPrompt] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const [textareaHeight, setTextareaHeight] = useState(48); // px, min height
+
+  const chats = useChatStore((state) => state.chats);
+  const addChat = useChatStore((state) => state.addChat);
+  const addMessage = useChatStore((state) => state.addMessage);
+  const getChatById = useChatStore((state) => state.getChatById);
+  
 
   // Constants for min/max height (px)
   const MIN_HEIGHT = 48; // 2 lines
@@ -35,6 +65,41 @@ export default function PromptInput({ onSubmit, disabled = false, placeholder = 
   // Reset textarea height on clear
   const handleSubmit = () => {
     if (prompt.trim() && !disabled) {
+
+      // Create new message object
+      const newMessage: Message = {
+        id: crypto.randomBytes(16).toString('hex'),
+        content: prompt,
+        role: 'user',
+        timestamp: new Date(),
+        isLoading: false
+      };
+
+      // check if chatID exists in the store
+      if (getChatById(chatID)) {
+
+
+        // Add message to the existing chat
+        addMessage(chatID, newMessage);
+
+      }
+      else{
+        // Create new chat if chatID does not exist
+        const newChat: Chat = {
+          chatId: chatID,
+          chatName: `New Chat: ${prompt.substring(0, 6)}`,
+          chatSummary: prompt.substring(0, 20),
+          message: [newMessage],
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+
+        // Add new chat to the store
+        addChat(newChat);
+        addMessage(newChat.chatId, newMessage);
+      }
+
+
       onSubmit(prompt.trim());
       setPrompt("");
       if (textareaRef.current) {

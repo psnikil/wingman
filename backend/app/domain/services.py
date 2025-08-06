@@ -1,20 +1,21 @@
 from .models import Chat, Message, IsInit
 from app.infrastructure.ollama_client import is_ollama_running, start_ollama, list_ollama_models
 import uuid
+from app.schemas.chat import Message
 
 class ChatService:
     def __init__(self):
         self.chats = {}  # Dict[str, Chat]
 
-    def get_or_create_chat(self, chatId):
+    def get_or_create_chat(self, chatId,chatName):
         if chatId not in self.chats:
-            chat = Chat(chatId=chatId, chatName=f"Chat-{chatId[:4]}")
+            chat = Chat(chatId=chatId, chatName=chatName)
             self.chats[chatId] = chat
         return self.chats[chatId]
 
-    def add_user_message(self, chatId, content):
+    def add_user_message(self, chatId, message:Message):
         chat = self.get_or_create_chat(chatId)
-        msg = Message(id=str(uuid.uuid4()), content=content, role='user')
+        msg = Message(id=message.id, content=message.content, role=message.role, timestamp=message.timestamp)
         chat.messages.append(msg)
         chat.updatedAt = msg.timestamp
         return msg

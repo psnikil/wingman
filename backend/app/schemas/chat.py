@@ -22,3 +22,5 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     message: Message
     chatId: str
+
+

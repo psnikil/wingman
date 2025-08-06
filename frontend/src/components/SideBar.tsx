@@ -21,9 +21,13 @@ export interface Chat {
   chatId: string;
   chatName: string;
   chatSummary: string;
-  messages: Message[];
+  messages?: Message[];
   createdAt: Date;
   updatedAt: Date;
+}
+
+interface SideBarProps {
+  chats?: Chat[];
 }
 
 
@@ -64,9 +68,14 @@ const CreateNewChatIcon = ({ className }: { className?: string }) => (
     </svg>
     );
 
-export default function SideBar({chats}: {chats: Chat[]}) {
+export default function SideBar({chats = []}: SideBarProps) {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const addChat = useChatStore((state) => state.addChat);
+    const chatStore = useChatStore((state) => state.chats);
+    if (!chats) {
+        console.error("No chats provided to SideBar");
+        chats = chatStore; // Fallback to store if no chats prop is provided
+    }
   
 
     const createNewChat = () => {
