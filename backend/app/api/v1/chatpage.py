@@ -34,6 +34,7 @@ def create_chat(payload: Chat):
     # Since the chat is created, there is going to be one message at maximum
     if payload.messages:
         llms = list_ollama_models()
+        print(f"Available LLMs: {llms}")
         llm_reply = generate_llm_response(payload.messages[0], llms[0] if llms else '')
         chat_service.add_user_message(chat_id, payload.messages[0])
         print(f"Generated response: {llm_reply}")
@@ -44,7 +45,7 @@ def create_chat(payload: Chat):
     print(f"Chat created with ID: {get_chat.chatId}, Name: {get_chat.chatName}, Messages: {len(get_chat.messages)}")
     return True
 
-@router.get("/get_chat/{chatId}", response_model=ChatResponse)
+@router.get("/get_chat/{chatId}", response_model=ChatDataResponse)
 def get_chat(chatId: str):
     print(f"Retrieving all chats : {chat_service.get_all_chats()}")
     try:

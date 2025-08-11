@@ -1,13 +1,13 @@
 
 @echo off
-REM Start both frontend and backend in Windows Terminal tabs
-REM The working directory is set for each tab
+REM This script uses 'concurrently' to run both frontend and backend in the same terminal.
+REM If you don't have concurrently, install it globally with:
+REM   npm install -g concurrently
 
-wt.exe ^
-  new-tab -d "%CD%\frontend" cmd /k "npm run dev" ^
-  ; split-pane -H -d "%CD%\backend" cmd /k "call backend\Scripts\activate.bat && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000" 
+REM Start both servers
+REM Start both servers (this will block until both are stopped)
+start "" cmd /c "timeout /t 10 >nul && start "" "chrome.exe" --auto-open-devtools-for-tabs http://localhost:3000"
+concurrently ^
+  "cd frontend && npm run dev" ^
+  "cd backend && call backend\Scripts\activate.bat && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
 
-REM Wait for frontend to start (adjust timeout as needed)
-timeout /t 5 >nul
-REM Open Chrome to frontend with DevTools open
-start "" "chrome.exe" --auto-open-devtools-for-tabs "http://localhost:3000"
