@@ -43,12 +43,28 @@ export default function ChatContent({ chatID }: ChatContentProps) {
   // Load messages for current chat
   useEffect(() => {
     // Load messages from your store or API based on chatID
-    const currentChat = chats.find(chat => chat.chatId === chatID);
-    if (currentChat) {
-      // Load existing messages here
-      console.log("current chat",currentChat);
-      setMessages(currentChat.messages || []);
+    // const currentChat = chats.find(chat => chat.chatId === chatID);
+    // if (currentChat) {
+    //   // Load existing messages here
+    //   console.log("current chat",currentChat);
+    //   setMessages(currentChat.messages || []);
+    // }
+
+    //fetching the chat data from the backend
+    const fetchChatData = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/get_chat/${chatID}`);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        console.log("Fetched chat data:", data);
+        setMessages(data.messages || []);
+      } catch (error) {
+        console.error('Error fetching chat data:', error);
+      }
     }
+    fetchChatData();
   }, [chatID, chats]);
 
 
@@ -114,7 +130,7 @@ export default function ChatContent({ chatID }: ChatContentProps) {
         <div ref={messagesEndRef} />
       </div>
       <div className='flex flex-row'>
-        <PromptInput onSubmit={handlePrompt} disabled={false} placeholder = "Type message..."/>
+        <PromptInput onSubmit={handlePrompt} disabled={false} placeholder = "Type message..." chatID={chatID}/>
 
       </div>
 

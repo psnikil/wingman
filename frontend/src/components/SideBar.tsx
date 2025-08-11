@@ -72,8 +72,10 @@ export default function SideBar({chats = []}: SideBarProps) {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const addChat = useChatStore((state) => state.addChat);
     const chatStore = useChatStore((state) => state.chats);
-    if (!chats) {
-        console.error("No chats provided to SideBar");
+
+    console.log("Chats in SideBar 1:", chats);
+    if (chats.length === 0 ) {
+        console.log("No chats provided to SideBar");
         chats = chatStore; // Fallback to store if no chats prop is provided
     }
   
@@ -96,7 +98,7 @@ export default function SideBar({chats = []}: SideBarProps) {
     }
 
 
-
+    console.log("Chats in SideBar:", chats);
     return(
         <div className=' border-r border-zinc-600 rounded-sm'>
             {sidebarOpen ? (

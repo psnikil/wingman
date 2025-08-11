@@ -4,6 +4,7 @@ import sys
 import os
 import socket
 
+from fastapi import APIRouter, HTTPException
 from langchain_ollama import OllamaLLM as Ollama
 from langchain_core.prompts import ChatPromptTemplate
 import ollama
@@ -63,6 +64,14 @@ def wait_for_ollama(timeout=15):
     print("❌ Ollama did not start in time.")
     return False
 
+def get_available_models():
+    """Get a list of available models."""
+    if not is_ollama_running():
+        if not wait_for_ollama():
+            print("❌ Failed to start Ollama.")
+            return []
+    return list_ollama_models()
+
 def chat_with_model(model_name, sys_prompt=" You are a helpful assistant. Answer the user's question based on the provided context."):
     """Send a prompt to the selected model."""
     template = '''
@@ -98,7 +107,7 @@ def chat_with_model(model_name, sys_prompt=" You are a helpful assistant. Answer
     except Exception as e:
         return f"❌ Error during chat: {e}"
     
-def generate_llm_response(prompt: str, model: str = '',context:str = '') -> str:
+def generate_llm_response(prompt: str, model: str,context:str = '') -> str:
     """Send a prompt to the selected model."""
     template = '''
     System prompt: {sys_prompt}
@@ -107,8 +116,11 @@ def generate_llm_response(prompt: str, model: str = '',context:str = '') -> str:
     Answer:
     '''
     # context = ''
-
+    print(f"Generating response for prompt: {prompt} using model: {model} and context: {context}")
     try:
+        if not model:
+            print("❌ No model specified. Please provide a valid model name.")
+            raise HTTPException(status_code=404, detail=str(e))
         chat_model = Ollama(model=model)
         prompt_template = ChatPromptTemplate.from_template(template)
         chain = prompt_template | chat_model

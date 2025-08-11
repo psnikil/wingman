@@ -2,33 +2,48 @@ from .models import Chat, Message, IsInit
 from app.infrastructure.ollama_client import is_ollama_running, start_ollama, list_ollama_models
 import uuid
 from app.schemas.chat import Message
+from datetime import datetime
 
 class ChatService:
     def __init__(self):
         self.chats = {}  # Dict[str, Chat]
 
-    def get_or_create_chat(self, chatId,chatName):
+    def create_chat(self, chatId,chatName):
         if chatId not in self.chats:
             chat = Chat(chatId=chatId, chatName=chatName)
             self.chats[chatId] = chat
         return self.chats[chatId]
+    
+    def get_chat_byID(self, chatId):
+        """ Retrieve chat by ID if given else raise error """
+        if chatId in self.chats:
+            return self.chats[chatId]
+        else:
+            raise ValueError(f"Chat with ID {chatId} does not exist.")
+    
+    def get_all_chats(self):
+        """ 
+        Return all chats 
+        TODO: add pagination and sorting
+        """
+        return list(self.chats.values())
 
     def add_user_message(self, chatId, message:Message):
-        chat = self.get_or_create_chat(chatId)
+        chat = self.get_chat_byID(chatId)
         msg = Message(id=message.id, content=message.content, role=message.role, timestamp=message.timestamp)
         chat.messages.append(msg)
         chat.updatedAt = msg.timestamp
         return msg
 
     def add_assistant_message(self, chatId, content):
-        chat = self.get_or_create_chat(chatId)
-        msg = Message(id=str(uuid.uuid4()), content=content, role='assistant')
+        chat = self.get_chat_byID(chatId)
+        msg = Message(id=str(uuid.uuid4()), content=content, role='assistant',timestamp=datetime.utcnow())
         chat.messages.append(msg)
         chat.updatedAt = msg.timestamp
         return msg
 
     def get_chat_history(self, chatId):
-        chat = self.get_or_create_chat(chatId)
+        chat = self.get_chat_byID(chatId)
         return chat.messages
     
 class IsInitService:

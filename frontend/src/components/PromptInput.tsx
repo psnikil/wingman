@@ -20,7 +20,7 @@ export interface Chat {
   chatId: string;
   chatName: string;
   chatSummary: string;
-  message: Message[];
+  messages: Message[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -74,30 +74,30 @@ export default function PromptInput({ onSubmit, disabled = false, placeholder = 
         timestamp: new Date(),
         isLoading: false
       };
-
+      console.log('chatID is ', chatID,'get chat is is ', getChatById(chatID));
       // check if chatID exists in the store
-      if (getChatById(chatID)) {
+      if (getChatById(chatID) !== null) {
 
-
+        console.log('chatID exists in the store');
         // Add message to the existing chat
         addMessage(chatID, newMessage);
 
       }
-      else{
-        // Create new chat if chatID does not exist
-        const newChat: Chat = {
-          chatId: chatID,
-          chatName: `New Chat: ${prompt.substring(0, 6)}`,
-          chatSummary: prompt.substring(0, 20),
-          message: [newMessage],
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
-
-        // Add new chat to the store
-        addChat(newChat);
-        addMessage(newChat.chatId, newMessage);
-      }
+      // else{
+      //   // Create new chat if chatID does not exist
+      //   const newChat: Chat = {
+      //     chatId: chatID,
+      //     chatName: `New Chat: ${prompt.substring(0, 6)}`,
+      //     chatSummary: prompt.substring(0, 20),
+      //     messages: [newMessage],
+      //     createdAt: new Date(),
+      //     updatedAt: new Date()
+      //   };
+      //   console.log('chatID does not exist in the store');
+      //   // Add new chat to the store
+      //   addChat(newChat);
+      //   addMessage(newChat.chatId, newMessage);
+      // }
 
 
       onSubmit(prompt.trim());

@@ -29,23 +29,6 @@ interface Props {
     chatID: string;
 }
 
-// TODO:Find a way to pass 'chats' as a parameter to this function
-//function to update the chat using inputted prompt
-// function updateChat(chatID: string, prompt: string) {
-//     // const addMessage = useChatStore((state) => state.addMessage);
-    
-//     let newMessage: Message = {
-//         id: crypto.randomBytes(16).toString('hex'),
-//         content: prompt,
-//         role: 'user',
-//         timestamp: new Date(),
-//         isLoading: false
-//     };
-    
-//     addMessage(chatID, newMessage);
-// }
-
-
 export default function ChatPageClient({ chatID }: Props){
 
     const chats = useChatStore((state) => state.chats);
