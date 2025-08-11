@@ -23,4 +23,8 @@ class ChatResponse(BaseModel):
     message: Message
     chatId: str
 
+class ChatDataResponse(BaseModel):
+    chatId: str
+    messages: List[Message] = []
+
 

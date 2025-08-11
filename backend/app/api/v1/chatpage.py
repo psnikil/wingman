@@ -1,7 +1,7 @@
 """ TODO rename the file as this endpoint should be for handling chat messages and should be agnostic to any route """
 
 from fastapi import APIRouter, HTTPException
-from app.schemas.chat import ChatRequest, ChatResponse, Message,Chat
+from app.schemas.chat import ChatRequest, ChatResponse, Message,Chat, ChatDataResponse
 from app.domain.services import ChatService
 from app.infrastructure.ollama_client import generate_llm_response,list_ollama_models
 import uuid
@@ -49,7 +49,7 @@ def get_chat(chatId: str):
     print(f"Retrieving all chats : {chat_service.get_all_chats()}")
     try:
         chat = chat_service.get_chat_byID(chatId)
-        return ChatResponse(message=chat.messages[-1] if chat.messages else None, chatId=chat.chatId)
+        return ChatDataResponse(messages=chat.messages if chat.messages else None, chatId=chat.chatId)
     except ValueError as e:
         print(f"Error retrieving chat: {e}")
         raise HTTPException(status_code=404, detail=str(e))

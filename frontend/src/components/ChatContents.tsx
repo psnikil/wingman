@@ -97,6 +97,7 @@ export default function ChatContent({ chatID }: ChatContentProps) {
     console.log("User prompt:", prompt);
   };
   
+  console.log('Messages in ChatContent:', messages);
 
   return (
     <div className="flex flex-col h-full ">

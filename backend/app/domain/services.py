@@ -4,31 +4,35 @@ import uuid
 from app.schemas.chat import Message
 from datetime import datetime
 
+
+# Global chats dictionary to persist for server lifetime
+chats = {}  # Dict[str, Chat]
+
 class ChatService:
     def __init__(self):
-        self.chats = {}  # Dict[str, Chat]
+        pass
 
-    def create_chat(self, chatId,chatName):
-        if chatId not in self.chats:
+    def create_chat(self, chatId, chatName):
+        if chatId not in chats:
             chat = Chat(chatId=chatId, chatName=chatName)
-            self.chats[chatId] = chat
-        return self.chats[chatId]
+            chats[chatId] = chat
+        return chats[chatId]
     
     def get_chat_byID(self, chatId):
         """ Retrieve chat by ID if given else raise error """
-        if chatId in self.chats:
-            return self.chats[chatId]
+        if chatId in chats:
+            return chats[chatId]
         else:
             raise ValueError(f"Chat with ID {chatId} does not exist.")
     
     def get_all_chats(self):
-        """ 
-        Return all chats 
+        """
+        Return all chats
         TODO: add pagination and sorting
         """
-        return list(self.chats.values())
+        return list(chats.values())
 
-    def add_user_message(self, chatId, message:Message):
+    def add_user_message(self, chatId, message: Message):
         chat = self.get_chat_byID(chatId)
         msg = Message(id=message.id, content=message.content, role=message.role, timestamp=message.timestamp)
         chat.messages.append(msg)
@@ -37,7 +41,7 @@ class ChatService:
 
     def add_assistant_message(self, chatId, content):
         chat = self.get_chat_byID(chatId)
-        msg = Message(id=str(uuid.uuid4()), content=content, role='assistant',timestamp=datetime.utcnow())
+        msg = Message(id=str(uuid.uuid4()), content=content, role='assistant', timestamp=datetime.utcnow())
         chat.messages.append(msg)
         chat.updatedAt = msg.timestamp
         return msg
