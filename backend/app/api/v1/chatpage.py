@@ -10,6 +10,8 @@ from datetime import datetime
 router = APIRouter()
 chat_service = ChatService()
 
+
+
 @router.post("/chat", response_model=ChatResponse)
 def send_message(payload: ChatRequest):
 
@@ -23,10 +25,11 @@ def send_message(payload: ChatRequest):
     print(f"Generated response: {assistant_msg}")
     return ChatResponse(message=assistant_msg, chatId=payload.chatId)
 
-@router.post("/Createchat", response_model=bool)
+@router.post("/Createchat", response_model=str)
 def create_chat(payload: Chat):
     print(f"Received chat request: {payload}")
-    chat_id = payload.chatId
+    # Create a random chat ID
+    chat_id = payload.chatId # uuid.UUID(int=rd.getrandbits(128), version=4)
     chat_name = payload.chatName
     created_at = payload.createdAt or datetime.now()
     updated_at = payload.updatedAt or datetime.now()
@@ -43,7 +46,7 @@ def create_chat(payload: Chat):
     # Need to add error handling whe using database
     get_chat = chat_service.get_chat_byID(chat_id)
     print(f"Chat created with ID: {get_chat.chatId}, Name: {get_chat.chatName}, Messages: {len(get_chat.messages)}")
-    return True
+    return chat_id
 
 @router.get("/get_chat/{chatId}", response_model=ChatDataResponse)
 def get_chat(chatId: str):
@@ -54,3 +57,23 @@ def get_chat(chatId: str):
     except ValueError as e:
         print(f"Error retrieving chat: {e}")
         raise HTTPException(status_code=404, detail=str(e))
+    
+
+@router.get("/get_all_chats", response_model=list[Chat])
+def get_all_chats():
+    print(f"Retrieving all chats : {chat_service.get_all_chats()}")
+    return chat_service.get_all_chats() 
+
+@router.post("/response", response_model=ChatResponse)
+def get_response(payload: ChatRequest):
+    print(f"Received chat request: {payload}")
+    # Add user message to history
+    user_msg = chat_service.add_user_message(payload.chatId, payload.prompt)
+    #temp, getting model, in future this should be passed in the request
+    llms = list_ollama_models()
+    # Send prompt to LLM
+    llm_reply = generate_llm_response(payload.prompt,llms[0] if llms else '')
+    # Add assistant message to history
+    assistant_msg = chat_service.add_assistant_message(payload.chatId, llm_reply)
+    print(f"Generated response: {assistant_msg}")
+    return ChatResponse(message=assistant_msg, chatId=payload.chatId)

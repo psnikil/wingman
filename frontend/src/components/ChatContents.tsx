@@ -68,7 +68,7 @@ export default function ChatContent({ chatID }: ChatContentProps) {
   }, [chatID, chats]);
 
 
-  const handlePrompt = (prompt: string) => {
+  const handlePrompt = async (prompt: string) => {
 
     //update chat after the first message
     if (messages.length === 0) {
@@ -92,8 +92,43 @@ export default function ChatContent({ chatID }: ChatContentProps) {
         timestamp: new Date(),
         isLoading: false
     };
-    
+
+
+    //ADD USER PROMPT TO CHAT STORE
     addMessage(chatID, newMessage);
+    console.log("User prompt:", prompt);
+
+
+    let payload = {
+      chatId: chatID,
+      prompt: newMessage
+    };
+
+    let LLMresponse:Message = {
+      id: crypto.randomBytes(16).toString('hex'),
+      content: "This is a simulated response from the LLM.", // Replace with actual LLM response
+      role: 'assistant',
+      timestamp: new Date(),
+      isLoading: true
+    };
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/response`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('Failed to fetch');
+      LLMresponse = await res.json();
+      console.log("Response from backend:", LLMresponse);
+    } catch (err: any) {
+      console.error('Error sending message:', err.message);
+    }
+
+    // add LLM response to chat store
+    addMessage(chatID, LLMresponse);
     console.log("User prompt:", prompt);
   };
   

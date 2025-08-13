@@ -3,7 +3,7 @@ import PromptInput from '@/components/PromptInput';
 import SideBar from '@/components/SideBar';
 import crypto from 'crypto';
 import { useChatStore } from '@/store/chatStore';
-import React from 'react';
+import { useState, useRef, useEffect } from 'react';
 
   let newChat: Chat = {
     chatId: '',
@@ -44,6 +44,9 @@ export default function HomePageClient() {
   const addChat = useChatStore((state) => state.addChat);
   const addMessage = useChatStore((state) => state.addMessage);
 
+  const[Backendchats, setChats] = useState<Chat[]>([]);
+  
+
 
   let newChat: Chat = {
     chatId: '',
@@ -56,6 +59,28 @@ export default function HomePageClient() {
 
 
   let newMessage: Message[] = [];
+
+
+  useEffect(() => {
+      // Fetch chat data when component mounts
+      const fetchChatData = async () => {
+          try {
+              const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/get_all_chats`);
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              const data = await response.json();
+              // Assuming data contains the chat object
+              setChats(data || []);
+              console.log("Fetched chat data:", data);
+          }
+          catch (error) {
+              console.error('Error fetching chat data:', error);
+          }
+      }
+      fetchChatData();
+  },[]);
+  
 
   //below function should re-route to chatpage and/or send prompt to backend
   const handlePrompt = async (prompt: string) => {

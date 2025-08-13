@@ -6,7 +6,7 @@ REM   npm install -g concurrently
 
 REM Start both servers
 REM Start both servers (this will block until both are stopped)
-start "" cmd /c "timeout /t 10 >nul && start "" "chrome.exe" --auto-open-devtools-for-tabs http://localhost:3000"
+start "" cmd /c "timeout /t 5 >nul && start "" "chrome.exe" --auto-open-devtools-for-tabs http://localhost:3000"
 concurrently ^
   "cd frontend && npm run dev" ^
   "cd backend && call backend\Scripts\activate.bat && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"

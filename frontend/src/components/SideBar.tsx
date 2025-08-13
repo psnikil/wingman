@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link";
-import React, { useState } from "react"
+import React, { useState,useEffect } from "react"
 import { useChatStore } from '@/store/chatStore';
 import crypto from 'crypto';
 
@@ -29,6 +29,11 @@ export interface Chat {
 interface SideBarProps {
   chats?: Chat[];
 }
+
+export interface Payload {
+  data: any;
+}
+
 
 
 const CloseSidebarIcon = ({ className }: { className?: string }) => (
@@ -70,17 +75,38 @@ const CreateNewChatIcon = ({ className }: { className?: string }) => (
 
 export default function SideBar({chats = []}: SideBarProps) {
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    // const[Backendchats, setChats] = useState<Chat[]>([]);
+    
     const addChat = useChatStore((state) => state.addChat);
     const chatStore = useChatStore((state) => state.chats);
+
+                const fetchChatData = async () => {
+                try {
+                    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/get_all_chats`);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    const data = await response.json();
+                    // Assuming data contains the chat object
+                   chatStore.push(...data);
+                    console.log("Fetched chat data:", data);
+                }
+                catch (error) {
+                    console.error('Error fetching chat data:', error);
+                }
+            }
+
 
     console.log("Chats in SideBar 1:", chats);
     if (chats.length === 0 ) {
         console.log("No chats provided to SideBar");
         chats = chatStore; // Fallback to store if no chats prop is provided
+
+
     }
   
 
-    const createNewChat = () => {
+    const createNewChat = async () => {
     // Logic to create a new chat
         const newChat: Chat = {
             chatId: crypto.randomBytes(16).toString('hex'),
@@ -91,6 +117,25 @@ export default function SideBar({chats = []}: SideBarProps) {
             updatedAt: new Date()
         };
         addChat(newChat);
+        let payload: Payload = {
+            data: newChat
+        }
+        
+        try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/Createchat`, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload.data),
+        });
+        if (!res.ok) throw new Error('Failed to fetch');
+        const result = await res.json();
+        console.log("Response from backend:", result);
+        } catch (err: any) {
+        console.error('Error sending message:', err.message);
+        }
+
 
         //Redirect to chat page
         window.location.href = `/chatpage/${newChat.chatId}`;

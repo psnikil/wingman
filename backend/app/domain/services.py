@@ -31,12 +31,16 @@ class ChatService:
         TODO: add pagination and sorting
         """
         return list(chats.values())
+    
+    """ TODO: The adding of messages can be consolidated into a single method if needed """
 
     def add_user_message(self, chatId, message: Message):
         chat = self.get_chat_byID(chatId)
         msg = Message(id=message.id, content=message.content, role=message.role, timestamp=message.timestamp)
         chat.messages.append(msg)
         chat.updatedAt = msg.timestamp
+        #this needs to be changes into the result of adding aka true or false
+        #also this allows for error handling
         return msg
 
     def add_assistant_message(self, chatId, content):
@@ -44,6 +48,8 @@ class ChatService:
         msg = Message(id=str(uuid.uuid4()), content=content, role='assistant', timestamp=datetime.utcnow())
         chat.messages.append(msg)
         chat.updatedAt = msg.timestamp
+        #this needs to be changes into the result of adding aka true or false
+        #also this allows for error handling
         return msg
 
     def get_chat_history(self, chatId):
