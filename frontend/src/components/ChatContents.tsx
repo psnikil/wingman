@@ -58,38 +58,25 @@ export default function ChatContent({ chatID }: ChatContentProps) {
   }, [chatID]);
 
 
+
   const handlePrompt = async (prompt: string) => {
+    // Optionally update chat meta after first message (not used here)
 
-    //update chat after the first message
-    if (messages.length === 0) {
-
-      let updatedChat = {
-        chatId: chatID,
-        chatName: `New Chat: ${prompt.substring(0, 6)}`,
-        chatSummary: prompt.substring(0, 20),
-        messages: [],
-        updatedAt: new Date()
-      };
-    }
-
-
-      // Your logic to handle/submit the prompt, e.g., send to backend/chat API
-    let newMessage: Message = {
-        id: crypto.randomBytes(16).toString('hex'),
-        content: prompt,
-        role: 'user',
-        timestamp: new Date(),
-        isLoading: true
+    // Create and add the user's message immediately
+    const userMessage: Message = {
+      id: crypto.randomBytes(16).toString('hex'),
+      content: prompt,
+      role: 'user',
+      timestamp: new Date(),
+      isLoading: true
     };
+    setMessages(prev => [...prev, userMessage]);
+    setIsTyping(true);
 
-
-
-
-    let payload = {
+    const payload = {
       chatId: chatID,
       prompt: prompt
     };
-
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/response`, {
@@ -100,14 +87,29 @@ export default function ChatContent({ chatID }: ChatContentProps) {
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error('Failed to fetch');
-      const LLMresponse:Message = await res.json();
+      const LLMresponse = await res.json();
       console.log("Response from backend:", LLMresponse);
-     (messages.push(LLMresponse));
 
+      // Replace the last user message's isLoading with false and add the assistant's response
+      setMessages(prev => {
+        // Remove isLoading from the last user message
+        const updated = prev.map((msg, idx) =>
+          idx === prev.length - 1 ? { ...msg, isLoading: false } : msg
+        );
+        return [...updated, LLMresponse.message];
+      });
     } catch (err: any) {
       console.error('Error sending message:', err.message);
+      // Optionally, update the last message to show error
+      setMessages(prev => {
+        const updated = prev.map((msg, idx) =>
+          idx === prev.length - 1 ? { ...msg, isLoading: false, content: msg.content + ' (Failed to get response)' } : msg
+        );
+        return updated;
+      });
+    } finally {
+      setIsTyping(false);
     }
-
   };
   
   console.log('Messages in ChatContent:', messages);

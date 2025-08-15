@@ -12,7 +12,7 @@ class Message(BaseModel):
 class Chat(BaseModel):
     chatId: str
     chatName: str
-    ChatSummary:str
+    chatSummary:str
     messages: List[Message]
     createdAt: datetime
     updatedAt: datetime

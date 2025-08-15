@@ -55,7 +55,7 @@ export default function ChatPageClient({ chatID }: Props){
                 console.log("Fetched chat data:", data);
             }
             catch (error) {
-                console.error('Error fetching chat data:', error);
+                console.error('Error fetching all chat data:', error);
             }
         }
         fetchChatData();

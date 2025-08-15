@@ -39,8 +39,6 @@ def create_chat(payload: CreateChatRequest):
         prompt = Prompt(message=payload.userPrompt,model=payload.llm)
 
         llm_reply = chat_service.add_user_message(chat_id, prompt)
-        # print(f"Generated response: {llm_reply}")
-        # chat_service.add_assistant_message(chat_id, llm_reply)
 
     # Need to add error handling whe using database
     get_chat = chat_service.get_chat_byID(chat_id)

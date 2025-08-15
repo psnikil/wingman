@@ -1,7 +1,7 @@
-from .models import Chat, Message, IsInit
+from .models import IsInit
+from app.schemas.chat import Chat, Message, Prompt
 from app.infrastructure.ollama_client import is_ollama_running, start_ollama, list_ollama_models,generate_llm_response
 import uuid
-from app.schemas.chat import Message,Prompt
 from datetime import datetime
 
 
@@ -18,10 +18,9 @@ class ChatService:
         pass
 
     def create_chat(self, userPrompt='')->str:
-
-        chat_id = str(uuid.uuid4()) #this needs to be a database function call
+        chat_id = str(uuid.uuid4())
         if userPrompt:
-            chat_name = f"New Chat: {userPrompt[:6]}" if userPrompt else "New Chat"
+            chat_name = f"New Chat: {userPrompt[:6]}"
             chat_summary = userPrompt[:12]
         else:
             chat_name = "New Chat"
@@ -29,8 +28,15 @@ class ChatService:
 
         created_at = datetime.now()
         updated_at = datetime.now()
-        chat = Chat(chatId=chat_id, chatName=chat_name,chatSummary=chat_summary, createdAt=created_at, updatedAt=updated_at)
-        # This is to cache the chats so you dont have to retrieve the chat from the database everytime
+        chat = Chat(
+            chatId=chat_id,
+            chatName=chat_name,
+            chatSummary=chat_summary,
+            messages=[],
+            createdAt=created_at,
+            updatedAt=updated_at
+        )
+        # This is to cache the chats so you dont have to retrieve the chat from the database every time
         chats[chat_id] = chat
         return chat_id
     
@@ -43,11 +49,11 @@ class ChatService:
     
     def get_all_chats(self):
         """
-        Return all chats
+        Return all chats as list of dicts (serialized for frontend)
         TODO: add pagination and sorting
         """
         print(f'all list values are {chats}')
-        return list(chats.values())
+        return [chat.model_dump() for chat in chats.values()]
     
     """ TODO: The adding of messages can be consolidated into a single method if needed """
 
