@@ -40,7 +40,7 @@ class ChatService:
         chats[chat_id] = chat
         return chat_id
     
-    def get_chat_byID(self, chatId):
+    def get_chat_byID(self, chatId)->Chat:
         """ Retrieve chat by ID if given else raise error """
         if chatId in chats:
             return chats[chatId]
@@ -52,7 +52,7 @@ class ChatService:
         Return all chats as list of dicts (serialized for frontend)
         TODO: add pagination and sorting
         """
-        print(f'all list values are {chats}')
+        # print(f'all list values are {chats}')
         return [chat.model_dump() for chat in chats.values()]
     
     """ TODO: The adding of messages can be consolidated into a single method if needed """
@@ -100,6 +100,31 @@ class ChatService:
     def get_chat_history(self, chatId):
         chat = self.get_chat_byID(chatId)
         return chat.messages
+    
+    def update_chat_meta_data(self,chatId,userPrompt):
+
+        try:
+            chat = self.get_chat_byID(chatId)
+
+            chat_name = f"New Chat: {userPrompt[:6]}"
+            chat_summary = userPrompt[:12]
+            updated_at = datetime.now()
+
+            # update chat
+            chat.chatName = chat_name
+            chat.chatSummary = chat_summary
+            chat.updatedAt = updated_at
+
+            # update the cache
+            chats[chatId] = chat
+            return True
+
+        except Exception as e:
+            print(f'There was an error in updating the chat',e)
+            raise e
+
+
+
     
 class IsInitService:
     def __init__(self):

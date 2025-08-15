@@ -39,4 +39,8 @@ class Prompt(BaseModel):
     message:str
     model:str
 
+class UpdateChat(BaseModel):
+    chatId:str
+    prompt:str
+
 

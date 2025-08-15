@@ -104,7 +104,7 @@ export default function HomePageClient() {
       window.location.href = `/chatpage/${chatID}`;
 
     } catch (err: any) {
-      console.error('Error sending message:', err.message);
+      console.error('Error sending message to new chat:', err.message);
     }
   };
   console.log('the chats are outside', newChat);

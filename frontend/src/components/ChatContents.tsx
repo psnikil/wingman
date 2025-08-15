@@ -60,7 +60,30 @@ export default function ChatContent({ chatID }: ChatContentProps) {
 
 
   const handlePrompt = async (prompt: string) => {
-    // Optionally update chat meta after first message (not used here)
+
+    const update_payload = {
+      chatId:chatID,
+      prompt:prompt
+    }
+    // Update the chat meta data on the first prompt
+    if(messages.length === 0){
+      console.log('updating the chat meta data')
+      try {
+        const update = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/updatechat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(update_payload),
+        });
+        if (!update.ok) throw new Error('Failed to fetch');
+        const res = await update.json();
+        console.log("The result of the update is :", res);
+
+      } catch (err: any) {
+        console.error('Error sending message:', err.message);
+      }
+    }
 
     // Create and add the user's message immediately
     const userMessage: Message = {
