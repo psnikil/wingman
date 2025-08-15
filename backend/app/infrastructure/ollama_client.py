@@ -71,7 +71,7 @@ def get_available_models():
             print("❌ Failed to start Ollama.")
             return []
     return list_ollama_models()
-
+""" Below is a fucntion to test for backend chatting, this is CLI """
 def chat_with_model(model_name, sys_prompt=" You are a helpful assistant. Answer the user's question based on the provided context."):
     """Send a prompt to the selected model."""
     template = '''
@@ -115,6 +115,7 @@ def generate_llm_response(prompt: str, model: str,context:str = '') -> str:
     User's question: {question}
     Answer:
     '''
+    
     # context = ''
     print(f"Generating response for prompt: {prompt} using model: {model} and context: {context}")
     try:

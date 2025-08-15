@@ -1,8 +1,13 @@
 from .models import Chat, Message, IsInit
-from app.infrastructure.ollama_client import is_ollama_running, start_ollama, list_ollama_models
+from app.infrastructure.ollama_client import is_ollama_running, start_ollama, list_ollama_models,generate_llm_response
 import uuid
-from app.schemas.chat import Message
+from app.schemas.chat import Message,Prompt
 from datetime import datetime
+
+
+import uuid
+from datetime import datetime
+
 
 
 # Global chats dictionary to persist for server lifetime
@@ -12,11 +17,22 @@ class ChatService:
     def __init__(self):
         pass
 
-    def create_chat(self, chatId, chatName):
-        if chatId not in chats:
-            chat = Chat(chatId=chatId, chatName=chatName)
-            chats[chatId] = chat
-        return chats[chatId]
+    def create_chat(self, userPrompt='')->str:
+
+        chat_id = str(uuid.uuid4()) #this needs to be a database function call
+        if userPrompt:
+            chat_name = f"New Chat: {userPrompt[:6]}" if userPrompt else "New Chat"
+            chat_summary = userPrompt[:12]
+        else:
+            chat_name = "New Chat"
+            chat_summary = 'No Messages!!!!'
+
+        created_at = datetime.now()
+        updated_at = datetime.now()
+        chat = Chat(chatId=chat_id, chatName=chat_name,chatSummary=chat_summary, createdAt=created_at, updatedAt=updated_at)
+        # This is to cache the chats so you dont have to retrieve the chat from the database everytime
+        chats[chat_id] = chat
+        return chat_id
     
     def get_chat_byID(self, chatId):
         """ Retrieve chat by ID if given else raise error """
@@ -30,27 +46,50 @@ class ChatService:
         Return all chats
         TODO: add pagination and sorting
         """
+        print(f'all list values are {chats}')
         return list(chats.values())
     
     """ TODO: The adding of messages can be consolidated into a single method if needed """
 
-    def add_user_message(self, chatId, message: Message):
+    def add_user_message(self, chatId, prompt:Prompt):
         chat = self.get_chat_byID(chatId)
-        msg = Message(id=message.id, content=message.content, role=message.role, timestamp=message.timestamp)
-        chat.messages.append(msg)
-        chat.updatedAt = msg.timestamp
-        #this needs to be changes into the result of adding aka true or false
-        #also this allows for error handling
-        return msg
+        try:
+            # Add user prompt
+            user_msg = Message(id=str(uuid.uuid4()), content=prompt.message, role='user', timestamp=datetime.now())
+            chat.messages.append(user_msg)
+            chat.updatedAt = user_msg.timestamp
+            if not prompt.model:
+                raise "There is no LLM selected"
+            # Generate response and add to chat
+            llm_reply = generate_llm_response(prompt.message, prompt.model) #TODO: create a function to create context from messages
+            assistant_msg = Message(id=str(uuid.uuid4()), content=llm_reply, role='assistant', timestamp=datetime.now())
+            print(f"Generated response: {llm_reply}")
+            chat.messages.append(assistant_msg)
+            chat.updatedAt = user_msg.timestamp
 
-    def add_assistant_message(self, chatId, content):
+
+            # update the cache
+            chats[chatId] = chat
+            return assistant_msg
+        except Exception as e:
+            print("There was an error in adding the user message",e)
+            raise e
+        
+    @DeprecationWarning
+    def add_assistant_message(self, chatId, content:Prompt):
         chat = self.get_chat_byID(chatId)
-        msg = Message(id=str(uuid.uuid4()), content=content, role='assistant', timestamp=datetime.utcnow())
-        chat.messages.append(msg)
-        chat.updatedAt = msg.timestamp
-        #this needs to be changes into the result of adding aka true or false
-        #also this allows for error handling
-        return msg
+        msg_id = str(uuid.uuid4())
+        timestamp = datetime.now()
+        try:
+            msg = Message(id=msg_id, content=content.message, role='assistant', timestamp=timestamp)
+            chat.messages.append(msg)
+            chat.updatedAt = msg.timestamp
+            # update the cache
+            chats[chatId] = chat
+            return True
+        except Exception as e:
+            print("There was an error in adding the LLM message")
+            raise e
 
     def get_chat_history(self, chatId):
         chat = self.get_chat_byID(chatId)

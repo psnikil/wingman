@@ -6,14 +6,15 @@ class Message:
         self.id = id
         self.content = content
         self.role = role
-        self.timestamp = timestamp or datetime.utcnow()
+        self.timestamp = timestamp or datetime.now()
 
 class Chat:
-    def __init__(self, chatId, chatName, createdAt=None, updatedAt=None):
+    def __init__(self, chatId, chatName,chatSummary='', createdAt=None, updatedAt=None):
         self.chatId = chatId
         self.chatName = chatName
-        self.createdAt = createdAt or datetime.utcnow()
-        self.updatedAt = updatedAt or datetime.utcnow()
+        self.chatSummary = chatSummary
+        self.createdAt = createdAt or datetime.now()
+        self.updatedAt = updatedAt or datetime.now()
         self.messages: List[Message] = []
 
 # This is the class for checking if the backend is initialized

@@ -31,8 +31,10 @@ interface SideBarProps {
 }
 
 export interface Payload {
-  data: any;
+  userPrompt?: string;
+  model?:string;
 }
+
 
 
 
@@ -80,27 +82,10 @@ export default function SideBar({chats = []}: SideBarProps) {
     const addChat = useChatStore((state) => state.addChat);
     const chatStore = useChatStore((state) => state.chats);
 
-                const fetchChatData = async () => {
-                try {
-                    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/get_all_chats`);
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    const data = await response.json();
-                    // Assuming data contains the chat object
-                   chatStore.push(...data);
-                    console.log("Fetched chat data:", data);
-                }
-                catch (error) {
-                    console.error('Error fetching chat data:', error);
-                }
-            }
-
 
     console.log("Chats in SideBar 1:", chats);
     if (chats.length === 0 ) {
         console.log("No chats provided to SideBar");
-        chats = chatStore; // Fallback to store if no chats prop is provided
 
 
     }
@@ -108,37 +93,25 @@ export default function SideBar({chats = []}: SideBarProps) {
 
     const createNewChat = async () => {
     // Logic to create a new chat
-        const newChat: Chat = {
-            chatId: crypto.randomBytes(16).toString('hex'),
-            chatName: `New Chat ${new Date().toLocaleTimeString()}`,
-            chatSummary: 'This is a new chat',
-            messages: [],
-            createdAt: new Date(),
-            updatedAt: new Date()
-        };
-        addChat(newChat);
-        let payload: Payload = {
-            data: newChat
-        }
+        let payload: Payload = {};
+        
         
         try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/Createchat`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/Createchat`, {
             method: 'POST',
             headers: {
-            'Content-Type': 'application/json',
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify(payload.data),
-        });
-        if (!res.ok) throw new Error('Failed to fetch');
-        const result = await res.json();
-        console.log("Response from backend:", result);
+            body: JSON.stringify(payload),
+            });
+            if (!res.ok) throw new Error('Failed to fetch');
+            const chatID = await res.json();
+            console.log("The new chat is with is :", chatID);
+            window.location.href = `/chatpage/${chatID}`;
+
         } catch (err: any) {
-        console.error('Error sending message:', err.message);
+            console.error('Error sending message:', err.message);
         }
-
-
-        //Redirect to chat page
-        window.location.href = `/chatpage/${newChat.chatId}`;
 
     }
 

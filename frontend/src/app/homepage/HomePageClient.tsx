@@ -33,7 +33,8 @@ export interface Chat {
 }
 
 export interface Payload {
-  data: any;
+  userPrompt?: string;
+  model?:string;
 }
 
 const HEADER_HEIGHT = 150;
@@ -85,24 +86,9 @@ export default function HomePageClient() {
   //below function should re-route to chatpage and/or send prompt to backend
   const handlePrompt = async (prompt: string) => {
     console.log("User prompt:", prompt);
-    newMessage = [{
-      id: crypto.randomBytes(16).toString('hex'),
-      content: prompt,
-      role: 'user',
-      timestamp: new Date(),
-      isLoading: false
-    }];
-
-    newChat = {
-      chatId: crypto.randomBytes(16).toString('hex'),
-      chatName: `New Chat: ${prompt.substring(0, 6)}`,
-      chatSummary: prompt.substring(0, 20),
-      messages: newMessage,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
+    
     let payload: Payload = {
-      data: newChat
+      userPrompt: prompt
     }
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/Createchat`, {
@@ -110,24 +96,21 @@ export default function HomePageClient() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload.data),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error('Failed to fetch');
-      const result = await res.json();
-      console.log("Response from backend:", result);
+      const chatID = await res.json();
+      console.log("The new chat is with is :", chatID);
+      window.location.href = `/chatpage/${chatID}`;
+
     } catch (err: any) {
       console.error('Error sending message:', err.message);
     }
-    console.log('the chats are ', newChat);
-    addChat(newChat);
-    addMessage(newChat.chatId, newMessage[0]);
-
-    window.location.href = `/chatpage/${newChat.chatId}`;
   };
   console.log('the chats are outside', newChat);
   return (
     <div className='flex flex-1 border rounded-sm border-zinc-600 min-h-svh' style={{ minHeight: `calc(100vh - ${HEADER_HEIGHT}px)` }}>
-      <SideBar />
+      <SideBar chats={Backendchats}/>
       <main className="flex-1 flex items-center justify-center bg-neutral-900 p-6 ">
         <div className="text-shadow-gray-400 text-2xl font-light">
           Welcome to Wingman! Select a chat or start a new conversation.

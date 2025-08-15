@@ -25,10 +25,6 @@ export default function ChatContent({ chatID }: ChatContentProps) {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // This is getting the data from the chat store
-  const { chats } = useChatStore();
-  const addMessage = useChatStore((state) => state.addMessage);
-  const updateChat = useChatStore((state) => state.updateChat);
 
 
   // Auto-scroll to bottom when new messages arrive
@@ -43,12 +39,6 @@ export default function ChatContent({ chatID }: ChatContentProps) {
   // Load messages for current chat
   useEffect(() => {
     // Load messages from your store or API based on chatID
-    // const currentChat = chats.find(chat => chat.chatId === chatID);
-    // if (currentChat) {
-    //   // Load existing messages here
-    //   console.log("current chat",currentChat);
-    //   setMessages(currentChat.messages || []);
-    // }
 
     //fetching the chat data from the backend
     const fetchChatData = async () => {
@@ -65,7 +55,7 @@ export default function ChatContent({ chatID }: ChatContentProps) {
       }
     }
     fetchChatData();
-  }, [chatID, chats]);
+  }, [chatID]);
 
 
   const handlePrompt = async (prompt: string) => {
@@ -80,7 +70,6 @@ export default function ChatContent({ chatID }: ChatContentProps) {
         messages: [],
         updatedAt: new Date()
       };
-      updateChat(chatID, updatedChat);
     }
 
 
@@ -90,27 +79,17 @@ export default function ChatContent({ chatID }: ChatContentProps) {
         content: prompt,
         role: 'user',
         timestamp: new Date(),
-        isLoading: false
+        isLoading: true
     };
 
 
-    //ADD USER PROMPT TO CHAT STORE
-    addMessage(chatID, newMessage);
-    console.log("User prompt:", prompt);
 
 
     let payload = {
       chatId: chatID,
-      prompt: newMessage
+      prompt: prompt
     };
 
-    let LLMresponse:Message = {
-      id: crypto.randomBytes(16).toString('hex'),
-      content: "This is a simulated response from the LLM.", // Replace with actual LLM response
-      role: 'assistant',
-      timestamp: new Date(),
-      isLoading: true
-    };
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/response`, {
@@ -121,15 +100,14 @@ export default function ChatContent({ chatID }: ChatContentProps) {
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error('Failed to fetch');
-      LLMresponse = await res.json();
+      const LLMresponse:Message = await res.json();
       console.log("Response from backend:", LLMresponse);
+     (messages.push(LLMresponse));
+
     } catch (err: any) {
       console.error('Error sending message:', err.message);
     }
 
-    // add LLM response to chat store
-    addMessage(chatID, LLMresponse);
-    console.log("User prompt:", prompt);
   };
   
   console.log('Messages in ChatContent:', messages);

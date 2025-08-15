@@ -3,21 +3,27 @@ from datetime import datetime
 from typing import List
 
 class Message(BaseModel):
-    id: str
+    id: str = ""
     content: str
     role: str  # 'user' or 'assistant'
     timestamp: datetime
+    isLoading:bool = False
 
 class Chat(BaseModel):
     chatId: str
     chatName: str
+    ChatSummary:str
     messages: List[Message]
     createdAt: datetime
     updatedAt: datetime
 
+class CreateChatRequest(BaseModel):
+    userPrompt: str = ""
+    llm:str = ''
+
 class ChatRequest(BaseModel):
     chatId: str
-    prompt: Message
+    prompt: str
     llm: str = ''  # Optional, can be used to specify which LLM to use
 
 class ChatResponse(BaseModel):
@@ -28,5 +34,9 @@ class ChatResponse(BaseModel):
 class ChatDataResponse(BaseModel):
     chatId: str
     messages: List[Message] = []
+
+class Prompt(BaseModel):
+    message:str
+    model:str
 
 
