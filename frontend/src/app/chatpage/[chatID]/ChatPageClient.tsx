@@ -32,50 +32,30 @@ interface Props {
 
 export default function ChatPageClient({ chatID }: Props){
 
-    
-    const[Backendchats, setChats] = useState<Chat[]>([]);
-    const chats = useChatStore((state) => state.chats);
-    const addMessage = useChatStore((state) => state.addMessage);
-
-
+    const [Backendchats, setChats] = useState<Chat[]>([]);
     //using magic number , need to make it dynamic
     const HEADER_HEIGHT = 150;
 
-    useEffect(() => {
-        // Fetch chat data when component mounts
-        const fetchChatData = async () => {
-            try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/get_all_chats`);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                // Assuming data contains the chat object
-                setChats(data || []);
-                console.log("Fetched chat data:", data);
+    // Move fetchChatData outside useEffect so it can be reused
+    const fetchChatData = async () => {
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/get_all_chats`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
-            catch (error) {
-                console.error('Error fetching all chat data:', error);
-            }
+            const data = await response.json();
+            setChats(data || []);
+            console.log("Fetched chat data:", data);
         }
-        fetchChatData();
-    },[]);
-    
-    const handlePrompt = (prompt: string) => {
-        // Your logic to handle/submit the prompt, e.g., send to backend/chat API
+        catch (error) {
+            console.error('Error fetching all chat data:', error);
+        }
+    };
 
-    
-    let newMessage: Message = {
-        id: crypto.randomBytes(16).toString('hex'),
-        content: prompt,
-        role: 'user',
-        timestamp: new Date(),
-        isLoading: false
-    };
-    
-    addMessage(chatID, newMessage);
-        console.log("User prompt:", prompt);
-    };
+    useEffect(() => {
+        fetchChatData();
+    }, []);
+
 
     return(
         <div className='flex flex-1 border rounded-sm border-zinc-600 ' style={{ minHeight: `calc(100vh - ${HEADER_HEIGHT}px)` }}>
@@ -83,12 +63,10 @@ export default function ChatPageClient({ chatID }: Props){
             {/* Main content area */}
             <main className="flex-1 flex flex-col bg-neutral-900 p-6 ">
                 <div className="flex-1 flex flex-col min-h-0">
-                    <ChatContents chatID={chatID} />
+                    <ChatContents chatID={chatID} onPromptSent={fetchChatData} />
                 </div>
-                {/* <PromptInput onSubmit={handlePrompt} /> */}
             </main>
             {/* Additional chat functionalities can be added here */}
         </div>
     )
-  
 }

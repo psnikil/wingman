@@ -17,9 +17,10 @@ interface Message {
 
 interface ChatContentProps {
   chatID: string;
+  onPromptSent?: () => void;
 }
 
-export default function ChatContent({ chatID }: ChatContentProps) {
+export default function ChatContent({ chatID, onPromptSent }: ChatContentProps) {
   //these are for the local messages for this component
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -132,6 +133,10 @@ export default function ChatContent({ chatID }: ChatContentProps) {
       });
     } finally {
       setIsTyping(false);
+      // Call onPromptSent callback if provided
+      if (typeof onPromptSent === 'function') {
+        onPromptSent();
+      }
     }
   };
   
