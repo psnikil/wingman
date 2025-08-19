@@ -3,15 +3,15 @@
 from fastapi import APIRouter, HTTPException
 from app.schemas.chat import ChatRequest, ChatResponse, UpdateChat,Chat, ChatDataResponse,CreateChatRequest,Prompt
 from app.domain.services import ChatService
-from app.infrastructure.ollama_client import generate_llm_response,list_ollama_models
-import uuid
-from datetime import datetime
+from app.infrastructure.ollama.ollama_client import generate_llm_response,list_ollama_models
+
 
 router = APIRouter()
 chat_service = ChatService()
 
 
 
+@DeprecationWarning
 @router.post("/chat", response_model=ChatResponse)
 def send_message(payload: ChatRequest):
 

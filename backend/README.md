@@ -1,97 +1,165 @@
----
-# Wingman Backend (FastAPI + Ollama)
+***
 
-Welcome to the backend of the **Wingman LLM Chat App**! This backend provides a robust, extensible API for chatting with a locally running LLM (via Ollama), following Clean Architecture principles for maintainability and scalability.
+# Wingman Backend (FastAPI + Ollama + PostgreSQL)
+
+Welcome to the backend of the Wingman LLM Chat App! This backend provides a robust, extensible API for chatting with a locally running LLM via Ollama, with PostgreSQL for persistent chat storage, following Clean Architecture principles for maintainability and scalability.
 
 ## Table of Contents
-
 - [Project Overview](#project-overview)
-- [Architecture & Structure](#architecture--structure)
+- [Architecture Structure](#architecture-structure)
 - [Setup & Installation](#setup--installation)
+- [Database Setup](#database-setup)
 - [Key Dependencies](#key-dependencies)
-- [Ollama/LLM Integration](#ollamallm-integration)
+- [Ollama LLM Integration](#ollama-llm-integration)
+- [Database Models](#database-models)
 - [API Reference](#api-reference)
-- [Data Models & Schemas](#data-models--schemas)
 - [Testing](#testing)
 - [Extending & Contributing](#extending--contributing)
 - [Future Roadmap](#future-roadmap)
 
----
+***
 
 ## Project Overview
 
-The backend powers a local ChatGPT-like experience, enabling chat with LLMs (e.g., Llama3) running on your machine via [Ollama](https://ollama.com/). It is designed for easy extension (RAG, agents, DB, etc.) and seamless integration with the Next.js frontend.
+The backend powers a local ChatGPT-like experience, enabling chat with LLMs (e.g., Llama3) running on your machine via Ollama. It now includes **PostgreSQL integration** for persistent chat storage and is designed for easy extension (RAG, agents, advanced DB features, etc.) and seamless integration with the Next.js frontend.
 
-## Architecture & Structure
+***
 
-Follows Clean Architecture for clear separation of concerns:
+## Architecture Structure
 
 ```
 backend/
 ├── app/
-│   ├── main.py             # FastAPI entrypoint
-│   ├── api/                # HTTP API (routers, v1/)
-│   ├── domain/             # Business logic (entities, services)
-│   ├── infrastructure/     # Integrations: ollama, (future: DB, vector search)
-│   ├── schemas/            # Pydantic models for API
-│   └── utils/              # Helpers/utilities
-├── requirements.txt        # Python dependencies
-├── migrations/             # (Future) DB migrations
-├── tests/                  # Unit/integration tests
-├── .env.example            # Example environment config
-└── README.md               # This file
+│   ├── main.py                 # FastAPI entrypoint
+│   ├── api/                    # HTTP API routers
+│   │   └── v1/                 # API version 1
+│   ├── domain/                 # Business logic entities, services
+│   ├── infrastructure/         # Integrations (ollama, database)
+│   │   ├── ollama/             # Ollama client
+│   │   └── database/           # Database models and CRUD
+│   └── schemas/                # Pydantic models for API
+├── database/                   # Database related files
+│   ├── __init__.py
+│   ├── db_models.py               # SQLAlchemy models (Chat, Message)
+│   ├── crud.py                 # Database CRUD operations
+│   ├── connection.py           # Database connection setup
+│   └── init_db.py              # Database initialization script
+├── utils/                      # Helpers/utilities
+├── requirements.txt            # Python dependencies
+├── migrations/                 # Future DB migrations (Alembic)
+├── tests/                      # Unit/integration tests
+├── .env.example                # Example environment config
+└── README.md                   # This file
 ```
+
+***
 
 ## Setup & Installation
 
-1. **Clone the repository**
-  ```sh
-  git clone <repo-url>
-  cd backend
-  ```
-2. **Create and activate a virtual environment**
-  ```sh
-  python -m venv venv
-  # On Windows:
-  venv\Scripts\activate
-  # On macOS/Linux:
-  source venv/bin/activate
-  ```
-3. **Install dependencies**
-  ```sh
-  pip install -r requirements.txt
-  ```
-4. **Install & start Ollama**
-  - Download from [Ollama](https://ollama.com/)
-  - Pull a model (e.g., llama3):
-    ```sh
-    ollama pull llama3
-    ollama serve
-    ```
-  - Ollama runs at `http://localhost:11434`
-5. **Run the backend server**
-  ```sh
-  uvicorn app.main:app --reload
-  ```
-  The API is now live at [http://localhost:8000](http://localhost:8000)
+### 1. Clone the repository
+```sh
+git clone 
+cd backend
+```
+
+### 2. Create and activate a virtual environment
+```sh
+python -m venv venv
+# On Windows: venv\Scripts\activate
+# On macOS/Linux: source venv/bin/activate
+```
+
+### 3. Install dependencies
+```sh
+pip install -r requirements.txt
+```
+
+### 4. Set up PostgreSQL
+- Install PostgreSQL locally or use a cloud instance
+- Create a database for your project
+- Update your database credentials in `.env` file
+
+### 5. Install & start Ollama
+- Download from [Ollama](https://ollama.ai)
+- Pull a model (e.g., llama3):
+```sh
+ollama pull llama3
+ollama serve
+```
+- Ollama runs at `http://localhost:11434`
+
+### 6. Initialize the database
+```sh
+python database/init_db.py
+```
+
+### 7. Run the backend server
+```sh
+uvicorn app.main:app --reload
+```
+
+The API is now live at `http://localhost:8000`
+
+***
+
+## Database Setup
+
+### Environment Configuration
+Create a `.env` file with your database credentials:
+```env
+DATABASE_URL=postgresql://yourusername:yourpassword@localhost/yourdatabase
+```
+
+### Database Models
+The application uses two main models:
+
+**Chat Model:**
+- `chatid` (String, Primary Key)
+- `chatName` (String)
+- `chatSummary` (String)
+- `last_updated` (DateTime)
+- `created_at` (DateTime)
+- `messages` (Relationship to Message)
+
+**Message Model:**
+- `messageId` (String, Primary Key)
+- `chatid` (String, Foreign Key)
+- `role` (Enum: 'user' | 'assistant')
+- `content` (String)
+- `timestamp` (DateTime)
+
+### Database Operations
+Available CRUD operations:
+- **Add Chat**: Create new chat with messages
+- **Get Chat**: Retrieve chat by ID with all messages
+- **Update Chat**: Modify chat properties
+- **Delete Chat**: Remove chat and all associated messages
+
+***
 
 ## Key Dependencies
 
-- [FastAPI](https://fastapi.tiangolo.com/) (web API)
-- [Uvicorn](https://www.uvicorn.org/) (ASGI server)
-- [Ollama](https://ollama.com/) (local LLM)
-- [Pydantic](https://docs.pydantic.dev/) (data validation)
-- [langchain](https://python.langchain.com/) (optional: RAG/agents)
-- [faiss-cpu](https://github.com/facebookresearch/faiss) (optional: vector search)
-- [pytest](https://docs.pytest.org/) (testing)
+- **FastAPI**: Web API framework
+- **Uvicorn**: ASGI server
+- **SQLAlchemy**: ORM for database operations
+- **PostgreSQL**: Database (asyncpg/psycopg2-binary drivers)
+- **Ollama**: Local LLM integration
+- **Pydantic**: Data validation
+- **langchain**: (optional) RAG/agents
+- **faiss-cpu**: (optional) Vector search
+- **pytest**: Testing framework
 
 See `requirements.txt` for the full list.
 
-## Ollama/LLM Integration
+***
 
-- **Integration**: `app/infrastructure/ollama_client.py`
+## Ollama LLM Integration
+
+- **Integration**: `app/infrastructure/ollama/client.py`
 - **Connection**: REST API to Ollama at `localhost:11434`
 - **Models**: Use any model pulled locally (e.g., llama3, mistral)
+
+***
 
 ## API Reference
 
@@ -103,65 +171,107 @@ See `requirements.txt` for the full list.
 | `/chats`             | POST   | Create a new chat session                    |
 | `/health`            | GET    | Health check endpoint                        |
 
-**Example: Send user message to /chat**
-
-Request:
+### Example: Send user message to chat
+**Request:**
 ```json
 {
   "prompt": "Hello, how are you?"
 }
 ```
-Response:
+
+**Response:**
 ```json
 {
   "response": "I'm doing well, thanks for asking!"
 }
 ```
 
-## Data Models & Schemas
+***
 
-Defined in `app/schemas/` (Pydantic):
+## Database Models & Schemas
+
+Defined in `database/models.py` (SQLAlchemy) and `app/schemas/` (Pydantic):
 
 ```python
-class Message(BaseModel):
-   id: str
-   content: str
-   role: str  # 'user' or 'assistant'
-   timestamp: datetime
-   isLoading: bool = False
+# SQLAlchemy Models
+class Chat(Base):
+    chatid: str
+    chatName: str
+    chatSummary: str
+    messages: List[Message]
+    created_at: datetime
+    last_updated: datetime
 
-class Chat(BaseModel):
-   chatId: str
-   chatName: str
-   chatSummary: str
-   messages: list[Message]
-   createdAt: datetime
-   updatedAt: datetime
+class Message(Base):
+    messageId: str
+    role: Enum['user', 'assistant']
+    content: str
+    timestamp: datetime
 ```
+
+```python
+# Pydantic Schemas
+class MessageBase(BaseModel):
+    id: str
+    content: str
+    role: str  # "user" or "assistant"
+    timestamp: datetime
+    isLoading: bool = False
+
+class ChatBase(BaseModel):
+    chatId: str
+    chatName: str
+    chatSummary: str
+    messages: List[Message]
+    createdAt: datetime
+    updatedAt: datetime
+```
+
+***
 
 ## Testing
 
 - Tests are in `tests/` and mirror the app structure
 - Run all tests:
-  ```sh
-  pytest
-  ```
+```sh
+pytest
+```
+
+***
 
 ## Extending & Contributing
 
+### Adding Features
 - **Add endpoints**: Create routers in `app/api/v1/`, update schemas as needed
 - **Business logic**: Extend in `app/domain/`
-- **Integrations**: Add new clients in `app/infrastructure/` (e.g., DB, vector search)
-- **Versioning**: Future APIs go under `api/v2/`, etc.
-- **PRs and issues welcome!**
+- **Integrations**: Add new clients in `app/infrastructure/` (e.g., vector search)
+- **Database**: Extend models in `database/models.py`, add CRUD in `database/crud.py`
+- **Versioning**: Future APIs go under `app/api/v2/`, etc.
+
+### Database Migrations
+For schema changes, use Alembic:
+```sh
+# Generate migration
+alembic revision --autogenerate -m "Add new column"
+# Apply migration
+alembic upgrade head
+```
+
+PRs and issues welcome!
+
+***
 
 ## Future Roadmap
 
-- **PostgreSQL**: Store chat/message history, use SQLAlchemy, Alembic for migrations
+- **✅ PostgreSQL**: Store chat/message history with SQLAlchemy *(Completed)*
 - **RAG/Agents**: Add vector search and agent orchestration
+- **Alembic Migrations**: Database schema versioning
 - **Dockerization**: Containerize for easy deployment
 - **API Versioning**: Support breaking changes via `/api/v2/`, etc.
+- **User Authentication**: Multi-user support
+- **WebSocket Support**: Real-time chat updates
 
----
+***
 
-For questions, contact the dev team. Happy coding!
+For questions, contact the dev team. Happy coding! 🚀
+

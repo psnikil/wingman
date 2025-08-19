@@ -1,0 +1,9 @@
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: nikilps
+      POSTGRES_PASSWORD: Admin123
+      POSTGRES_DB: wingman_db
+    ports:
+      - "6969:5432"
