@@ -49,10 +49,10 @@ def create_chat(payload: CreateChatRequest, db: Session = Depends(get_db)):
         # Since the chat is created, there is going to be one message at maximum
         if payload.userPrompt:
             # TODO: model should be from the member of payload
-            llms = list_ollama_models() #payload.model
-            print(f"Available LLMs: {llms}")
-            payload.llm = llms[0]
-            prompt = Prompt(message=payload.userPrompt,model=payload.llm)
+            # llms = list_ollama_models() #payload.model
+            print(f"Available LLMs: {payload.model}")
+            # payload.llm = llms[0]
+            prompt = Prompt(message=payload.userPrompt,model=payload.model)
 
             llm_reply = chat_service.add_user_message(chat_id, prompt, db)
         return chat_id
@@ -90,9 +90,10 @@ def get_response(payload: ChatRequest, db: Session = Depends(get_db)):
 
     try:
 
-        llms = list_ollama_models()
+        # llms = list_ollama_models()
 
-        user_prompt = Prompt(message=payload.prompt, model=llms[0])
+        user_prompt = Prompt(message=payload.prompt, model=payload.model)
+        print('the llm in chats api is',payload)
         # Add user message to history
         llm_reply = chat_service.add_user_message(payload.chatId, user_prompt, db)
         print(f"Generated response: {llm_reply}")

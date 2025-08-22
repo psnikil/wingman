@@ -20,12 +20,12 @@ class Chat(BaseModel):
 
 class CreateChatRequest(BaseModel):
     userPrompt: str = ""
-    llm:str = ''
+    model:str = ''
 
 class ChatRequest(BaseModel):
     chatId: str
     prompt: str
-    llm: str = ''  # Optional, can be used to specify which LLM to use
+    model: str = ''  # Optional, can be used to specify which LLM to use
 
 class ChatResponse(BaseModel):
     chatId: str #not sure we need to send back chatID in response

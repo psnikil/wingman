@@ -31,7 +31,7 @@ def start_ollama():
         print(f"Error starting Ollama: {e}")
         sys.exit(1)
 
-def list_ollama_models():
+def list_ollama_models()->list:
     """List available models in Ollama."""
     models_names = []
     try:

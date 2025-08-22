@@ -143,6 +143,7 @@ class ChatService:
             # Add user prompt
             user_msg = Message(messageId=str(uuid.uuid4()), content=prompt.message, role='user', timestamp=datetime.now())
             chat.messages.append(user_msg)
+            print('the context for the chat is',context, 'and the model is',prompt.model)
             # db type
             # TODO: need to find a neater way to pass user_msg rather than this primitive type caste
             new_user_message = Message_db(**user_msg.__dict__,chatId=chatId)
@@ -151,7 +152,7 @@ class ChatService:
             if not prompt.model:
                 raise "There is no LLM selected"
             
-            print('the context for the chat is',context)
+            
             # Generate response and add to chat
             llm_reply = generate_llm_response(prompt.message, prompt.model, context) #TODO: create a function to create context from messages
             assistant_msg = Message(messageId=str(uuid.uuid4()), content=llm_reply, role='assistant', timestamp=datetime.now())

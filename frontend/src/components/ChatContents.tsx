@@ -5,6 +5,7 @@ import { useChatStore } from '@/store/chatStore';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
 import PromptInput from '@/components/PromptInput';
+import { useLLMstore } from '@/store/backendStore';
 import crypto from 'crypto';
 
 interface Message {
@@ -20,18 +21,51 @@ interface ChatContentProps {
   onPromptSent?: () => void;
 }
 
+
 export default function ChatContent({ chatID, onPromptSent }: ChatContentProps) {
   //these are for the local messages for this component
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { available_llms, setLLMstore, chosen_llm, setChosenLLM } = useLLMstore();
 
+  const fetchAvailableLLMs = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/list_ollama_models`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setLLMstore(data || []);
+      if (!chosen_llm && data && data.length > 0) {
+        setChosenLLM(data[0]);
+      }
+      console.log('Fetched chat data:', data);
+    } catch (error) {
+      console.error('Error fetching chat data:', error);
+    }
+  };
 
+  const updateChosenLLM = (llm: string) => {
+    try {
+      if (!available_llms.includes(llm)) {
+        console.error('error in updating chosen llm');
+      }
+      setChosenLLM(llm);
+      console.log('the updated LLM from Zustand is', llm);
+    } catch (error) {
+      console.error('error in updating chosen llm');
+    }
+  };
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    fetchAvailableLLMs();
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
@@ -99,7 +133,8 @@ export default function ChatContent({ chatID, onPromptSent }: ChatContentProps) 
 
     const payload = {
       chatId: chatID,
-      prompt: prompt
+      prompt: prompt,
+      model: chosen_llm
     };
 
     try {
@@ -143,9 +178,9 @@ export default function ChatContent({ chatID, onPromptSent }: ChatContentProps) 
   console.log('Messages in ChatContent:', messages, messages.length);
 
   return (
-    <div className="flex flex-col h-full ">
+    <div className="flex flex-col h-full relative">
       {/* Chat Header */}
-      <div className="border-b border-gray-500 p-4 top-0 z-10">
+      <div className="border-b border-gray-500 p-4 top-0 z-10 relative">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
             <span className="text-white text-sm font-medium">AI</span>
@@ -154,6 +189,23 @@ export default function ChatContent({ chatID, onPromptSent }: ChatContentProps) 
             <h2 className="font-semibold">AI Assistant</h2>
             <p className="text-sm text-gray-500">Online</p> {/*Change to variable */}
           </div>
+        </div>
+        {/* LLM Dropdown */}
+        <div className="absolute right-4 top-4 z-20">
+          <select
+            className="bg-zinc-800 text-white border border-zinc-600 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow"
+            value={chosen_llm}
+            onChange={e => updateChosenLLM(e.target.value)}
+            disabled={available_llms.length === 0}
+          >
+            {available_llms.length === 0 ? (
+              <option value="">Loading models...</option>
+            ) : (
+              available_llms.map(llm => (
+                <option key={llm} value={llm}>{llm}</option>
+              ))
+            )}
+          </select>
         </div>
       </div>
 
@@ -169,16 +221,12 @@ export default function ChatContent({ chatID, onPromptSent }: ChatContentProps) 
             />
           ))
         )}
-        
         {isTyping && <TypingIndicator />}
         <div ref={messagesEndRef} />
       </div>
       <div className='flex flex-row'>
         <PromptInput onSubmit={handlePrompt} disabled={false} placeholder = "Type message..." chatID={chatID}/>
-
       </div>
-
-
     </div>
   );
 }

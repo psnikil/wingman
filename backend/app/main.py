@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1 import chatpage, landingpage
+from app.api.v1 import inits_api
+from app.api.v1 import chats_api
+from app.api.v1 import ollama_api
 
 
 origins = [
@@ -16,5 +18,6 @@ app.add_middleware(
     allow_methods=["*"],              # Allow all HTTP methods (GET, POST, etc.)
     allow_headers=["*"],              # Allow all headers
 )
-app.include_router(chatpage.router, prefix="/api/v1")
-app.include_router(landingpage.router, prefix="/api/v1")
+app.include_router(chats_api.router, prefix="/api/v1")
+app.include_router(inits_api.router, prefix="/api/v1")
+app.include_router(ollama_api.router, prefix="/api/v1")
