@@ -178,7 +178,7 @@ export default function ChatContent({ chatID, onPromptSent }: ChatContentProps) 
   console.log('Messages in ChatContent:', messages, messages.length);
 
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="flex flex-col relative">
       {/* Chat Header */}
       <div className="border-b border-gray-500 p-4 top-0 z-10 relative">
         <div className="flex items-center space-x-3">
@@ -210,7 +210,7 @@ export default function ChatContent({ chatID, onPromptSent }: ChatContentProps) 
       </div>
 
       {/* Messages Container */}
-      <div className="h-full max-h-[600px] overflow-y-auto px-4 py-6 space-y-4 scroll-smooth dark-scrollbar">
+      <div className="h-full max-h-[700px] overflow-y-auto px-4 py-6 space-y-4 scroll-smooth dark-scrollbar">
         {messages.length === 0 ? (
           <WelcomeMessage />
         ) : (

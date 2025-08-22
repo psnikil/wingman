@@ -9,6 +9,8 @@ from sqlalchemy.orm import sessionmaker, Session
 from app.infrastructure.database.db_models import Chat_db, Base,Message_db
 from app.infrastructure.database.crud import add_chat, get_chat, update_chat, get_allchats,add_message, get_messages
 from typing import List
+import re
+
 DATABASE_URL = "postgresql://nikilps:Admin123@localhost:6969/wingman_db"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
@@ -30,6 +32,10 @@ class UtilServices:
     def __init__(self):
         pass
 
+    def clean_think_tags(text: str) -> str:
+        """Remove <think>...</think> tags and their content from the response."""
+        return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+
     def build_context_from_history(messages: list[Message])->str:
 
         formatted_messages = []
@@ -39,11 +45,11 @@ class UtilServices:
         for msg in messages:
             role_label = "User" if msg.role == "user" else "Assistant"
             timestamp_str = msg.timestamp.strftime("%Y-%m-%d %H:%M:%S")
-            formatted_messages.append(f"[{timestamp_str}] {role_label}: {msg.content.strip()}")
+            formatted_messages.append(f"[{timestamp_str}] {role_label}: {UtilServices.clean_think_tags(msg.content)}")
         
         return "\n".join(formatted_messages)
     
-    def update_cache(chatId,chat:Chat,messages:List[Message]=[]):
+    def update_cache(self,chatId,chat:Chat,messages:List[Message]=[]):
         print(f'the chat messages in chat are {chat.messages} and db messages are {messages}')
         chat.messages = messages
         updated_chat = Chat(**chat.__dict__)

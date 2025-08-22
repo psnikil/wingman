@@ -114,7 +114,7 @@ DATABASE_URL=postgresql://yourusername:yourpassword@localhost/yourdatabase
 The application uses two main models:
 
 **Chat Model:**
-- `chatid` (String, Primary Key)
+- `chatId` (String, Primary Key)
 - `chatName` (String)
 - `chatSummary` (String)
 - `last_updated` (DateTime)
@@ -123,17 +123,21 @@ The application uses two main models:
 
 **Message Model:**
 - `messageId` (String, Primary Key)
-- `chatid` (String, Foreign Key)
+- `chatId` (String, Foreign Key)
 - `role` (Enum: 'user' | 'assistant')
 - `content` (String)
 - `timestamp` (DateTime)
 
 ### Database Operations
 Available CRUD operations:
-- **Add Chat**: Create new chat with messages
-- **Get Chat**: Retrieve chat by ID with all messages
-- **Update Chat**: Modify chat properties
-- **Delete Chat**: Remove chat and all associated messages
+- **add_chat**: Create new chat with messages
+- **get_chat**: Retrieve chat by ID with all messages
+- **update_chat**: Modify chat properties
+- **delete_chat**: Remove chat and all associated messages
+- **get_allchats**: Get all chats
+- **add_message**: Add message to a given chat_id
+- **get_messages**: Get messages for a given chat_id
+
 
 ***
 
@@ -165,11 +169,12 @@ See `requirements.txt` for the full list.
 
 | Route                | Method | Description                                  |
 |----------------------|--------|----------------------------------------------|
-| `/chat`              | POST   | Send user message, get LLM response          |
-| `/chats/{chat_id}`   | GET    | Fetch single chat by ID                      |
-| `/chats`             | GET    | List all user chats (future: from db)        |
-| `/chats`             | POST   | Create a new chat session                    |
-| `/health`            | GET    | Health check endpoint                        |
+| `/CreateChat`                   | POST   | Send user message, create chat    |
+| `/get_chat_messages/{chatId}`   | GET    | Fetch single chat by ID           |
+| `/response`                     | POST   | Get response from LLM             |
+| `/updatechat`                   | POST   | Update chat meta data             |
+| `/is_init`                      | GET    | Health check for ollama           |
+| `/db_startup`                   | GET    | Health check for postgreSQL db    |
 
 ### Example: Send user message to chat
 **Request:**
@@ -190,41 +195,67 @@ See `requirements.txt` for the full list.
 
 ## Database Models & Schemas
 
-Defined in `database/models.py` (SQLAlchemy) and `app/schemas/` (Pydantic):
+Defined in `database/db_models.py` (SQLAlchemy) and `app/schemas/` (Pydantic):
 
 ```python
 # SQLAlchemy Models
-class Chat(Base):
-    chatid: str
+class Chat_db(Base):
+    chatId: str
     chatName: str
     chatSummary: str
-    messages: List[Message]
     created_at: datetime
-    last_updated: datetime
+    updatedAt: datetime
 
-class Message(Base):
+class Message_db(Base):
     messageId: str
     role: Enum['user', 'assistant']
+    chatId:str
     content: str
     timestamp: datetime
 ```
 
 ```python
 # Pydantic Schemas
-class MessageBase(BaseModel):
-    id: str
+class Message(BaseModel):
+    messageId: str = ""
     content: str
-    role: str  # "user" or "assistant"
+    role: str  # 'user' or 'assistant'
     timestamp: datetime
-    isLoading: bool = False
 
-class ChatBase(BaseModel):
+class Chat(BaseModel):
     chatId: str
     chatName: str
-    chatSummary: str
+    chatSummary:str
     messages: List[Message]
     createdAt: datetime
     updatedAt: datetime
+
+class CreateChatRequest(BaseModel):
+    userPrompt: str = ""
+    model:str = ''
+
+class ChatRequest(BaseModel):
+    chatId: str
+    prompt: str
+    model: str = ''  # Optional, can be used to specify which LLM to use
+
+class ChatResponse(BaseModel):
+    chatId: str #not sure we need to send back chatID in response
+    message: Message
+
+#This is the type when request a new chat window
+class ChatDataResponse(BaseModel):
+    chatId: str
+    messages: List[Message] = []
+    
+
+class Prompt(BaseModel):
+    message:str
+    model:str
+
+class UpdateChat(BaseModel):
+    chatId:str
+    prompt:str
 ```
 
 ***
