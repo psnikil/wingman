@@ -3,7 +3,7 @@ from datetime import datetime
 
 class Message:
     def __init__(self, id, content, role, timestamp=None):
-        self.id = id
+        self.messageId = id
         self.content = content
         self.role = role
         self.timestamp = timestamp or datetime.now()

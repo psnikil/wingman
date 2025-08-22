@@ -10,23 +10,24 @@ class Role(enum.Enum):
     user = 'user'
     assistant = 'assistant'
 
-class Chat(Base):
-    __tablename__ = 'Chat'
+class Chat_db(Base):
+    __tablename__ = 'Chat_db'
     #TODO Make this an Index depending on create_chat procedure
     chatId = Column(String, primary_key=True, index=True) 
     chatName = Column(String)
     chatSummary = Column(String)
-    last_updated = Column(DateTime)
-    created_at = Column(DateTime, default=datetime.now())
-    messages = relationship('Message', back_populates='chat', cascade='all, delete-orphan')
+    updatedAt = Column(DateTime)
+    createdAt = Column(DateTime, default=datetime.now())
+    # The back populate here should refer to the column name, not the table name
+    messages = relationship('Message_db', back_populates='chat', cascade='all, delete-orphan')
 
 
-class Message(Base):
-    __tablename__ = 'Message'
+class Message_db(Base):
+    __tablename__ = 'Message_db'
     messageId = Column(String, primary_key=True, index=True)
-    chatId = Column(String, ForeignKey('Chat.chatId'))
+    chatId = Column(String, ForeignKey('Chat_db.chatId'))
     role = Column(Enum(Role))
     content = Column(String)
     timestamp = Column(DateTime, default=datetime.now())
-
-    chat = relationship('Chat', back_populates='Message')
+    # The back populate here should refer to the column name, not the table name
+    chat = relationship('Chat_db', back_populates='messages')

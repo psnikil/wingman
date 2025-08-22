@@ -5,6 +5,7 @@ import Link from "next/link";
 import React, { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBackendStore } from "@/store/backendStore";
+import { useOllamaInitStore,useDbInitStore } from "@/store/backendStore";
 import LoadingIcon from "@/components/LoadingIcon";
 import ButtonLink from "@/components/ButtonLink";
 import IsInitialised from "./serverPage";
@@ -122,45 +123,76 @@ export function CheckInitProcesses(){
   //placeholder for now. need backend to check for the logic
   //create a timer to check if the loading icon and button activate right
   const {backendInit, setBackendInit} = useBackendStore();
+
+  const {ollamaInit, setOllamaInit} = useOllamaInitStore();
+  const {dbInit, setDbInit} = useDbInitStore();
   
 
   
   useEffect(() => {
-     let isInit:boolean= false;
-     const checkBackend = async () => {
+     let isInit_ollama:boolean= false;
+     let isInit_db:boolean = false;
+     const checkOllama = async () => {
+      // checking is ollama is initialized
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/is_init`); // Local API route
         if (!res.ok) throw new Error('Failed to fetch');
         const result = await res.json();
         if (result.is_init === true) {
-          console.log("Backend processes initialized successfully.");
-          setBackendInit(result.is_init);
+          console.log("Ollama processes initialized successfully.");
+          setOllamaInit(result.is_init);
           return; // stop checking if true
         }
 
-        if (!isInit){
-          setTimeout(checkBackend, 1500); // Check again after 1.5 seconds
+        if (!isInit_ollama){
+          setTimeout(checkOllama, 1500); // Check again after 1.5 seconds
         }
         
       } catch (err: any) {
         console.error('Error initializing ollama:', err.message);
-        if (!isInit){
-          setTimeout(checkBackend, 2500); // lonnger delay if error
+        if (!isInit_ollama){
+          setTimeout(checkOllama, 2500); // lonnger delay if error
+        }
+      }
+
+      
+    };
+
+    const checkDb = async () =>{
+      //checking if db is initialized 
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/db_startup`);
+        if (!res.ok) throw new Error('Failed to fetch');
+        const result = await res.json();
+        if( result.db_init === true) {
+          console.log("Ollama processes initialized successfully.");
+          setDbInit(result.db_init);
+          return; // stop checking if true
+        }
+
+        if (!isInit_db){
+          setTimeout(checkDb, 1500); // Check again after 1.5 seconds
+        }
+      } catch (err: any) {
+        console.error('Error initialising DB:', err)
+        if (!isInit_db){
+          setTimeout(checkDb,2500)
         }
       }
     };
-      // console.log("Backend processes not initialized yet, waiting...");
 
-    checkBackend();
+    checkOllama();
+    checkDb();
       
     return () => {
-      isInit = true; // Cleanup function to stop checking when component unmounts
+      isInit_ollama = true;
+      isInit_db = true; // Cleanup function to stop checking when component unmounts
     };
   }, []);
 
   return (
     <div className="flex items-center justify-center">
-      {!backendInit ? (
+      {!ollamaInit || !dbInit ? (
         <LoadingIcon />
       ) : (
         <ButtonLink button_text="Start Chat" link="/homepage" />

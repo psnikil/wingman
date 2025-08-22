@@ -5,7 +5,7 @@
 import TypingIndicator from './TypingIndicator';
 
 interface Message {
-  id: string;
+  messageId: string;
   content: string;
   role: 'user' | 'assistant';
   timestamp: Date;

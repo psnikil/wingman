@@ -42,4 +42,4 @@ def check_database_started():
         print('Database is already initialised')
         
     # status = "initialised " if table_exists else "not initialized"
-    return {"db_status":'initialised'}
+    return {"db_init": True}

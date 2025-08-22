@@ -5,11 +5,10 @@ from datetime import datetime
 from typing import List
 
 class Message(BaseModel):
-    id: str = ""
+    messageId: str = ""
     content: str
     role: str  # 'user' or 'assistant'
     timestamp: datetime
-    isLoading:bool = False
 
 class Chat(BaseModel):
     chatId: str
@@ -36,6 +35,7 @@ class ChatResponse(BaseModel):
 class ChatDataResponse(BaseModel):
     chatId: str
     messages: List[Message] = []
+    
 
 class Prompt(BaseModel):
     message:str
@@ -44,5 +44,8 @@ class Prompt(BaseModel):
 class UpdateChat(BaseModel):
     chatId:str
     prompt:str
+
+class config:
+    orm_mode = True
 
 

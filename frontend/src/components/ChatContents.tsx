@@ -8,7 +8,7 @@ import PromptInput from '@/components/PromptInput';
 import crypto from 'crypto';
 
 interface Message {
-  id: string;
+  messageId: string;
   content: string;
   role: 'user' | 'assistant';
   timestamp: Date;
@@ -44,7 +44,7 @@ export default function ChatContent({ chatID, onPromptSent }: ChatContentProps) 
     //fetching the chat data from the backend
     const fetchChatData = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/get_chat/${chatID}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/get_chat_messages/${chatID}`);
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
@@ -88,7 +88,7 @@ export default function ChatContent({ chatID, onPromptSent }: ChatContentProps) 
 
     // Create and add the user's message immediately
     const userMessage: Message = {
-      id: crypto.randomBytes(16).toString('hex'),
+      messageId: crypto.randomBytes(16).toString('hex'),
       content: prompt,
       role: 'user',
       timestamp: new Date(),
@@ -140,7 +140,7 @@ export default function ChatContent({ chatID, onPromptSent }: ChatContentProps) 
     }
   };
   
-  console.log('Messages in ChatContent:', messages);
+  console.log('Messages in ChatContent:', messages, messages.length);
 
   return (
     <div className="flex flex-col h-full ">
@@ -164,7 +164,7 @@ export default function ChatContent({ chatID, onPromptSent }: ChatContentProps) 
         ) : (
           messages.map((message) => (
             <MessageBubble 
-              key={message.id} 
+              key={message.messageId} 
               message={message} 
             />
           ))
