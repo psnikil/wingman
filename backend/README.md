@@ -34,9 +34,6 @@ backend/
 │   ├── api/                    # HTTP API routers
 │   │   └── v1/                 # API version 1
 │   ├── domain/                 # Business logic entities, services
-│   ├── infrastructure/         # Integrations (ollama, database)
-│   │   ├── ollama/             # Ollama client
-│   │   └── database/           # Database models and CRUD
 │   └── schemas/                # Pydantic models for API
 ├── database/                   # Database related files
 │   ├── __init__.py
@@ -45,7 +42,6 @@ backend/
 │   ├── connection.py           # Database connection setup
 │   └── init_db.py              # Database initialization script
 ├── utils/                      # Helpers/utilities
-├── requirements.txt            # Python dependencies
 ├── migrations/                 # Future DB migrations (Alembic)
 ├── tests/                      # Unit/integration tests
 ├── .env.example                # Example environment config

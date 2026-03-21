@@ -1,6 +1,6 @@
 # Wingman: Local LLM Chat App (Full Stack)
 
-Wingman is a full stack, locally running ChatGPT-like app that lets you chat with open-source LLMs (via Ollama) on your own machine. It features a modern custom UI, supports future RAG (Retrieval Augmented Generation), and is designed for privacy, extensibility, and developer friendliness.
+Wingman is a full stack, locally running agentic AI app that lets you chat with open-source LLMs (via Ollama) on your own machine. It integrates with any frontend, supports different agents, and is designed for privacy, extensibility, and developer friendliness.
 
 ---
 
@@ -9,8 +9,7 @@ Wingman is a full stack, locally running ChatGPT-like app that lets you chat wit
 - **Local LLM chat**: Interact with Llama3 or other models using Ollama
 - **Modern UI**: Built with Next.js, TailwindCSS, and TypeScript
 - **FastAPI backend**: Clean, modular Python backend
-- **RAG-ready**: Designed for file indexing and retrieval-augmented generation
-- **Extensible**: Add agents, new endpoints, or UI features easily
+- **Agents**: Supports multiple agents with different capabilities
 - **Containerizable**: Future Docker support for easy deployment
 
 ---
@@ -20,7 +19,7 @@ Wingman is a full stack, locally running ChatGPT-like app that lets you chat wit
 ```
 WingMan/
 ├── backend/    # FastAPI app (Python, Ollama integration)
-├── frontend/   # Next.js app (TypeScript, TailwindCSS)
+├── TUI/   # Terminal UI app (Python, Rich)
 └── README.md   # This file (global docs)
 ```
 
@@ -33,7 +32,6 @@ See each subfolder's README for detailed docs.
 ### 1. Prerequisites
 
 - **Python 3.10+** (for backend)
-- **Node.js 18+** (for frontend)
 - **Ollama** ([Download here](https://ollama.com/))
 
 ### 2. Clone the repository
@@ -51,15 +49,9 @@ python -m venv venv
 # On Windows:
 venv\Scripts\activate
 # On macOS/Linux:
-source venv/bin/activate
-pip install -r requirements.txt
-```
+source .venv/bin/activate
 
-#### Start Ollama and pull a model
-```sh
-ollama pull llama3
-ollama serve
-# Ollama runs at http://localhost:11434
+uv sync
 ```
 
 #### Run the backend server
@@ -68,14 +60,6 @@ uvicorn app.main:app --reload
 # API at http://localhost:8000
 ```
 
-### 4. Frontend Setup
-
-```sh
-cd ../frontend
-npm install
-npm run dev
-# App at http://localhost:3000
-```
 
 ---
 
@@ -83,35 +67,28 @@ npm run dev
 
 - **Ollama**: For running LLMs locally ([installation guide](https://ollama.com/))
 - **Python 3.10+**: Backend (FastAPI, Pydantic, etc.)
-- **Node.js 18+**: Frontend (Next.js, TailwindCSS)
+
 
 ---
 
 ## High-Level Architecture
 
-- **Frontend**: Next.js app (TypeScript, TailwindCSS)
-	- Modern, responsive UI
-	- State managed with Zustand
-	- Connects to backend via REST API
+
 - **Backend**: FastAPI app (Python)
 	- Handles chat, session, and LLM requests
-	- Integrates with Ollama for LLM inference
-	- Designed for future RAG, agents, and DB support
+	- Integrates with Ollama,langchain for LLM inference and agentic systems
+	- Designed for easy addition of agents,tools and building dynamic agentic workflows
 
 ---
 
 ## Roadmap & Extensibility
 
-- Add RAG (file indexing/search)
-- Add agent workflows
-- Add persistent storage (PostgreSQL)
-- Dockerize for easy deployment
+- TODO
 
 ---
 
 ## Resources
 
-- [Frontend README](./frontend/README.md)
 - [Backend README](./backend/README.md)
 
 ---
